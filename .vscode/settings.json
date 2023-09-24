@@ -1,0 +1,4 @@
+{
+  "android-dev-ext.appSourceRoot": "TeamCode/src/main",
+  "java.server.launchMode": "LightWeight"
+}

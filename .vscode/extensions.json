@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    //Needed for import resolution
+    "antonydalmiere.android-support",
+    //Needed for syntax coloring + error handling
+    "redhat.java",
+    //Used for tasks
+    "vscjava.vscode-gradle"
+  ]
+}
