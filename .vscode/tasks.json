@@ -1,0 +1,38 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Deploy",
+      "type": "shell",
+      "dependsOn": [
+        "Install",
+        "Launch"
+      ],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    },
+    {
+      "label": "Install",
+      "type": "process",
+      "command": "${workspaceFolder}/gradlew",
+      "args": [
+        "InstallDebug"
+      ],
+      "problemMatcher": [
+        "$gradle"
+      ]
+    },
+    {
+      "label": "Launch",
+      "type": "shell",
+      "command": "adb shell monkey -p com.qualcomm.ftcrobotcontroller 1",
+      "problemMatcher": []
+    },
+    {
+      "label": "LaunchOld",
+      "type": "shell",
+      "command": "adb shell am start -n \"com.qualcomm.ftcrobotcontroller/org.firstinspires.ftc.robotcontroller.internal.PermissionValidatorWrapper\" -a android.intent.action.MAIN -c android.intent.category.LAUNCHER",
+      "problemMatcher": [],
+    }
+  ],
+}
