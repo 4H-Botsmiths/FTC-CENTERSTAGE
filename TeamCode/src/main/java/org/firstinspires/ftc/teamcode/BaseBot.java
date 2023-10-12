@@ -26,8 +26,8 @@ import com.qualcomm.robotcore.util.Range;
  * Station OpMode list
  */
 
-@TeleOp(name = "BaseBot", group = "Test")
-@Disabled
+@TeleOp(name = "BaseBot")
+// @Disabled
 public class BaseBot extends OpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -48,17 +48,49 @@ public class BaseBot extends OpMode {
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
         frontLeft = hardwareMap.get(DcMotorEx.class, "FrontLeft");
+        frontLeft.resetDeviceConfigurationForOpMode();
+        frontLeft.setDirection(DcMotor.Direction.FORWARD);
+        frontLeft.setPower(0);
+        frontLeft.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        frontLeft.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         frontRight = hardwareMap.get(DcMotorEx.class, "FrontRight");
+        frontRight.resetDeviceConfigurationForOpMode();
+        frontRight.setDirection(DcMotor.Direction.FORWARD);
+        frontRight.setPower(0);
+        frontRight.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        frontRight.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         rearLeft = hardwareMap.get(DcMotorEx.class, "RearLeft");
+        rearLeft.resetDeviceConfigurationForOpMode();
+        rearLeft.setDirection(DcMotor.Direction.REVERSE);
+        rearLeft.setPower(0);
+        rearLeft.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        rearLeft.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        rearLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         rearRight = hardwareMap.get(DcMotorEx.class, "RearRight");
+        rearRight.resetDeviceConfigurationForOpMode();
+        rearRight.setDirection(DcMotor.Direction.REVERSE);
+        rearRight.setPower(0);
+        rearRight.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        rearRight.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        rearRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
-        rearRight.setDirection(DcMotor.Direction.REVERSE);
-        frontRight.setDirection(DcMotor.Direction.REVERSE);
+        /*
+         * rearRight.setDirection(DcMotor.Direction.REVERSE);
+         * rearLeft.setDirection(DcMotor.Direction.REVERSE);
+         * frontRight.setDirection(DcMotor.Direction.FORWARD);
+         * frontLeft.setDirection(DcMotor.Direction.FORWARD);
+         */
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
+        telemetry.addData("Front Left PIDF", "");
     }
 
     /*
@@ -102,16 +134,34 @@ public class BaseBot extends OpMode {
         // rightPower = -gamepad1.right_stick_y ;
 
         // Send calculated power to wheels
-        Drive(gamepad1.left_stick_x, -gamepad1.left_stick_y, gamepad1.right_stick_x);
+        // Drive(gamepad1.left_stick_x, -gamepad1.left_stick_y, gamepad1.right_stick_x);
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());
-        telemetry.addData("Front", "(%.2f) %S|-|%S (%.2f)",
-                frontLeft.getPower(), (frontLeft.getPower() == 0 ? '-' : frontLeft.getPower() > 0 ? '^' : 'v'),
-                frontRight.getPower(), (frontRight.getPower() == 0 ? '-' : frontRight.getPower() > 0 ? '^' : 'v'));
-        telemetry.addData("Rear", "(%.2f) %S|-|%S (%.2f)",
-                rearLeft.getPower(), (rearLeft.getPower() == 0 ? '-' : rearLeft.getPower() > 0 ? '^' : 'v'),
-                rearRight.getPower(), (rearRight.getPower() == 0 ? '-' : rearRight.getPower() > 0 ? '^' : 'v'));
-
+        telemetry.addData("Front Left", frontLeft.getVelocity());
+        telemetry.addData("Front Right", frontRight.getVelocity());
+        telemetry.addData("Rear Right", rearRight.getVelocity());
+        telemetry.addData("Rear Left", rearLeft.getVelocity());
+        /*
+         * telemetry.addData("Front", "(%.2f) %S|-|%S (%.2f)",
+         * frontLeft.getPower(), (frontLeft.getPower() == 0 ? '-' : frontLeft.getPower()
+         * > 0 ? '^' : 'v'),
+         * frontRight.getPower(), (frontRight.getPower() == 0 ? '-' :
+         * frontRight.getPower() > 0 ? '^' : 'v'));
+         * telemetry.addData("Rear", "(%.2f) %S|-|%S (%.2f)",
+         * rearLeft.getPower(), (rearLeft.getPower() == 0 ? '-' : rearLeft.getPower() >
+         * 0 ? '^' : 'v'),
+         * rearRight.getPower(), (rearRight.getPower() == 0 ? '-' : rearRight.getPower()
+         * > 0 ? '^' : 'v'));
+         */
+        if (gamepad1.a) {
+            frontLeft.setPower(0.1);
+            frontRight.setPower(0.1);
+            rearLeft.setPower(0.1);
+            rearRight.setPower(0.1);
+        } else {
+            Drive(Math.pow(gamepad1.left_stick_x, 3), Math.pow(-gamepad1.left_stick_y, 3),
+                    Math.pow(gamepad1.right_stick_x, 3));
+        }
     }
 
     /*
@@ -125,15 +175,30 @@ public class BaseBot extends OpMode {
 
     public void Drive(double x, double y, double z) {
         // r *= steeringMultiplier;
-        m1 = y + x + z;
-        m2 = y - x - z;
-        m3 = y - x + z;
-        m4 = y + x - z;
+        m1 = Range.clip(y + x + z, -1, 1);
+        m2 = Range.clip(y - x - z, -1, 1);
+        m3 = Range.clip(y - x + z, -1, 1);
+        m4 = Range.clip(y + x - z, -1, 1);
         // gamepad1.rumble((m1 + m3) / 2, (m2 + m4) / 2,
         // Gamepad.RUMBLE_DURATION_CONTINUOUS);
-        frontLeft.setVelocity(m1);
-        frontRight.setVelocity(m2);
-        rearLeft.setVelocity(m3);
-        rearRight.setVelocity(m4);
+        /*
+         * frontLeft.setVelocity(m1);
+         * frontRight.setVelocity(m2);
+         * rearLeft.setVelocity(m3);
+         * rearRight.setVelocity(m4);
+         */
+        frontLeft.setPower(m1);
+        telemetry.addData("Front Left Set", (int) (m1 * 100));
+        telemetry.addData("Front Left Get", (int) (frontLeft.getPower() * 100));
+        frontRight.setPower(m2);
+        telemetry.addData("Front Right Set", (int) (m2 * 100));
+        telemetry.addData("Front Right Get", (int) (frontRight.getPower() * 100));
+        rearLeft.setPower(m3);
+        telemetry.addData("Rear Left Set", (int) (m3 * 100));
+        telemetry.addData("Rear Left Get", (int) (rearLeft.getPower() * 100));
+        rearRight.setPower(m4);
+        telemetry.addData("Rear Rear Set", (int) (m4 * 100));
+        telemetry.addData("Rear Right Get", (int) (rearRight.getPower() * 100));
+
     }
 }
