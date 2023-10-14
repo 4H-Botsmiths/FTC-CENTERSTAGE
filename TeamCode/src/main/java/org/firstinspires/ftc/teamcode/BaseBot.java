@@ -26,7 +26,7 @@ import com.qualcomm.robotcore.util.Range;
  * Station OpMode list
  */
 
-@TeleOp(name = "BaseBot")
+@TeleOp(name = "BaseBot", group="B")
 // @Disabled
 public class BaseBot extends OpMode {
     // Declare OpMode members.
