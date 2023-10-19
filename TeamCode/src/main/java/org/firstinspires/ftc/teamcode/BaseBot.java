@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.robotcontroller.external.samples;
+package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -26,7 +26,7 @@ import com.qualcomm.robotcore.util.Range;
  * Station OpMode list
  */
 
-@TeleOp(name = "BaseBot", group="B")
+@TeleOp(name = "BaseBot", group = "B")
 // @Disabled
 public class BaseBot extends OpMode {
     // Declare OpMode members.
