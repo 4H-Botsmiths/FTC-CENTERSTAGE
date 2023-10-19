@@ -1,4 +1,7 @@
-package org.firstinspires.ftc.robotcontroller.external.samples;
+package org.firstinspires.ftc.teamcode;
+
+import org.firstinspires.ftc.teamcode.classes.CoreMotor;
+import org.firstinspires.ftc.teamcode.classes.HDMotor;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -33,9 +36,9 @@ import com.qualcomm.robotcore.util.Range;
 public class TestBot extends OpMode {
   // Declare OpMode members.
   private ElapsedTime runtime = new ElapsedTime();
-  private DcMotorEx motor0 = null;
+  private HDMotor motor0 = null;
   private DcMotor motor1 = null;
-  private DcMotorEx motor2 = null;
+  private CoreMotor motor2 = null;
   private DcMotor motor3 = null;
 
   private CRServo servo0 = null;
@@ -54,7 +57,7 @@ public class TestBot extends OpMode {
     // parameters
     // to 'get' must correspond to the names assigned during the robot configuration
     // step (using the FTC Robot Controller app on the phone).
-    motor0 = hardwareMap.get(DcMotorEx.class, "Motor_0");
+    motor0 = hardwareMap.get(HDMotor.class, "Motor_0");
     motor0.resetDeviceConfigurationForOpMode();
     motor0.setDirection(DcMotor.Direction.FORWARD);
     motor0.setPower(0);
@@ -69,7 +72,7 @@ public class TestBot extends OpMode {
     motor1.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
     motor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-    motor2 = hardwareMap.get(DcMotorEx.class, "Motor_2");
+    motor2 = hardwareMap.get(CoreMotor.class, "Motor_2");
     motor2.resetDeviceConfigurationForOpMode();
     motor2.setDirection(DcMotor.Direction.FORWARD);
     motor2.setPower(0);
@@ -126,13 +129,13 @@ public class TestBot extends OpMode {
   @Override
   public void loop() {
     telemetry.addData("Status", "Run Time: " + runtime.toString());
-    telemetry.addData("Motor 0", (int) (motor0.getPower() * 100));
+    telemetry.addData("Motor 0 (HD w/ Encoder)", Math.round(motor0.getSpeed() * 100));
     telemetry.addData("Motor 1", (int) (motor1.getPower() * 100));
-    telemetry.addData("Motor 2", (int) (motor3.getPower() * 100));
-    telemetry.addData("Motor 3", (int) (motor2.getPower() * 100));
-    motor0.setPower(-gamepad1.left_stick_y);
+    telemetry.addData("Motor 2 (Core w/ Encoder)", (int) (motor2.getSpeed() * 100));
+    telemetry.addData("Motor 3", (int) (motor3.getPower() * 100));
+    motor0.setSpeed(-gamepad1.left_stick_y);
     motor1.setPower(gamepad1.left_stick_x);
-    motor2.setPower(-gamepad1.right_stick_y);
+    motor2.setSpeed(-gamepad1.right_stick_y);
     motor3.setPower(gamepad1.right_stick_x);
 
     telemetry.addData("Servo 0", (int) (servo0.getPower() * 100));
