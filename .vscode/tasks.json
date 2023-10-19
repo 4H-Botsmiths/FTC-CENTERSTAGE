@@ -34,6 +34,21 @@
       "type": "shell",
       "command": "adb shell am start -n \"com.qualcomm.ftcrobotcontroller/org.firstinspires.ftc.robotcontroller.internal.PermissionValidatorWrapper\" -a android.intent.action.MAIN -c android.intent.category.LAUNCHER",
       "problemMatcher": [],
+    },
+    {
+      "label": "Assemble",
+      "type": "process",
+      "command": "${workspaceFolder}/gradlew",
+      "args": [
+        "AssembleDebug"
+      ],
+      "problemMatcher": [
+        "$gradle"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     }
   ],
 }
