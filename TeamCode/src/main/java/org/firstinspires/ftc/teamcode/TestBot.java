@@ -57,13 +57,8 @@ public class TestBot extends OpMode {
     // parameters
     // to 'get' must correspond to the names assigned during the robot configuration
     // step (using the FTC Robot Controller app on the phone).
-    motor0 = hardwareMap.get(HDMotor.class, "Motor_0");
-    motor0.resetDeviceConfigurationForOpMode();
-    motor0.setDirection(DcMotor.Direction.FORWARD);
-    motor0.setPower(0);
-    motor0.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-    motor0.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-    motor0.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    motor0 = new HDMotor(hardwareMap.get(DcMotorEx.class, "Motor_0"));
+    motor0.configure();
 
     motor1 = hardwareMap.get(DcMotor.class, "Motor_1");
     motor1.resetDeviceConfigurationForOpMode();
@@ -72,13 +67,8 @@ public class TestBot extends OpMode {
     motor1.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
     motor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-    motor2 = hardwareMap.get(CoreMotor.class, "Motor_2");
-    motor2.resetDeviceConfigurationForOpMode();
-    motor2.setDirection(DcMotor.Direction.FORWARD);
-    motor2.setPower(0);
-    motor2.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-    motor2.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-    motor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    motor2 = new CoreMotor(hardwareMap.get(DcMotorEx.class, "Motor_2"));
+    motor2.configure();
 
     motor3 = hardwareMap.get(DcMotor.class, "Motor_3");
     motor3.resetDeviceConfigurationForOpMode();
