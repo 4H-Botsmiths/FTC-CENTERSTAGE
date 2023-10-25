@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import org.firstinspires.ftc.teamcode.classes.CoreMotor;
+import org.firstinspires.ftc.teamcode.classes.DCMotor;
 import org.firstinspires.ftc.teamcode.classes.HDMotor;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -31,15 +32,15 @@ import com.qualcomm.robotcore.util.Range;
  * Station OpMode list
  */
 
-@TeleOp(name = "TestBot", group = "C")
+@TeleOp(name = "TestBoard", group = "C")
 // @Disabled
-public class TestBot extends OpMode {
+public class TestBoard extends OpMode {
   // Declare OpMode members.
   private ElapsedTime runtime = new ElapsedTime();
   private HDMotor motor0 = null;
-  private DcMotor motor1 = null;
+  private DCMotor motor1 = null;
   private CoreMotor motor2 = null;
-  private DcMotor motor3 = null;
+  private DCMotor motor3 = null;
 
   private CRServo servo0 = null;
   private Servo servo1 = null;
@@ -58,24 +59,12 @@ public class TestBot extends OpMode {
     // to 'get' must correspond to the names assigned during the robot configuration
     // step (using the FTC Robot Controller app on the phone).
     motor0 = new HDMotor(hardwareMap.get(DcMotorEx.class, "Motor_0"));
-    motor0.configure();
 
-    motor1 = hardwareMap.get(DcMotor.class, "Motor_1");
-    motor1.resetDeviceConfigurationForOpMode();
-    motor1.setDirection(DcMotor.Direction.FORWARD);
-    motor1.setPower(0);
-    motor1.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-    motor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    motor1 = new DCMotor(hardwareMap.get(DcMotor.class, "Motor_1"));
 
     motor2 = new CoreMotor(hardwareMap.get(DcMotorEx.class, "Motor_2"));
-    motor2.configure();
 
-    motor3 = hardwareMap.get(DcMotor.class, "Motor_3");
-    motor3.resetDeviceConfigurationForOpMode();
-    motor3.setDirection(DcMotor.Direction.FORWARD);
-    motor3.setPower(0);
-    motor3.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-    motor3.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    motor3 = new DCMotor(hardwareMap.get(DcMotor.class, "Motor_3"));
 
     servo0 = hardwareMap.get(CRServo.class, "Servo_0");
     servo0.resetDeviceConfigurationForOpMode();
@@ -120,13 +109,13 @@ public class TestBot extends OpMode {
   public void loop() {
     telemetry.addData("Status", "Run Time: " + runtime.toString());
     telemetry.addData("Motor 0 (HD w/ Encoder)", Math.round(motor0.getSpeed() * 100));
-    telemetry.addData("Motor 1", (int) (motor1.getPower() * 100));
+    telemetry.addData("Motor 1", (int) (motor1.getSpeed() * 100));
     telemetry.addData("Motor 2 (Core w/ Encoder)", (int) (motor2.getSpeed() * 100));
-    telemetry.addData("Motor 3", (int) (motor3.getPower() * 100));
+    telemetry.addData("Motor 3", (int) (motor3.getSpeed() * 100));
     motor0.setSpeed(-gamepad1.left_stick_y);
-    motor1.setPower(gamepad1.left_stick_x);
+    motor1.setSpeed(gamepad1.left_stick_x);
     motor2.setSpeed(-gamepad1.right_stick_y);
-    motor3.setPower(gamepad1.right_stick_x);
+    motor3.setSpeed(gamepad1.right_stick_x);
 
     telemetry.addData("Servo 0", (int) (servo0.getPower() * 100));
     if (gamepad1.dpad_up) {

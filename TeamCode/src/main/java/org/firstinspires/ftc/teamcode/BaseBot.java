@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
+import org.firstinspires.ftc.teamcode.classes.DCMotor;
+import org.firstinspires.ftc.teamcode.classes.HDMotor;
+
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -31,10 +34,10 @@ import com.qualcomm.robotcore.util.Range;
 public class BaseBot extends OpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotorEx frontLeft = null;
-    private DcMotorEx frontRight = null;
-    private DcMotorEx rearLeft = null;
-    private DcMotorEx rearRight = null;
+    private HDMotor frontLeft = null;
+    private HDMotor frontRight = null;
+    private HDMotor rearLeft = null;
+    private HDMotor rearRight = null;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -47,38 +50,10 @@ public class BaseBot extends OpMode {
         // parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        frontLeft = hardwareMap.get(DcMotorEx.class, "FrontLeft");
-        frontLeft.resetDeviceConfigurationForOpMode();
-        frontLeft.setDirection(DcMotor.Direction.FORWARD);
-        frontLeft.setPower(0);
-        frontLeft.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        frontLeft.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        frontRight = hardwareMap.get(DcMotorEx.class, "FrontRight");
-        frontRight.resetDeviceConfigurationForOpMode();
-        frontRight.setDirection(DcMotor.Direction.FORWARD);
-        frontRight.setPower(0);
-        frontRight.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        frontRight.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        rearLeft = hardwareMap.get(DcMotorEx.class, "RearLeft");
-        rearLeft.resetDeviceConfigurationForOpMode();
-        rearLeft.setDirection(DcMotor.Direction.REVERSE);
-        rearLeft.setPower(0);
-        rearLeft.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        rearLeft.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-        rearLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        rearRight = hardwareMap.get(DcMotorEx.class, "RearRight");
-        rearRight.resetDeviceConfigurationForOpMode();
-        rearRight.setDirection(DcMotor.Direction.REVERSE);
-        rearRight.setPower(0);
-        rearRight.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        rearRight.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-        rearRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
+        frontLeft = new HDMotor(hardwareMap.get(DcMotorEx.class, "FrontLeft"));
+        frontRight = new HDMotor(hardwareMap.get(DcMotorEx.class, "FrontRight"));
+        rearLeft = new HDMotor(hardwareMap.get(DcMotorEx.class, "RearLeft"), DcMotor.Direction.REVERSE);
+        rearRight = new HDMotor(hardwareMap.get(DcMotorEx.class, "RearRight"), DcMotor.Direction.REVERSE);
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
         /*
@@ -113,19 +88,6 @@ public class BaseBot extends OpMode {
      */
     @Override
     public void loop() {
-        // Setup a variable for each drive wheel to save power level for telemetry
-        double leftPower;
-        double rightPower;
-
-        // Choose to drive using either Tank Mode, or POV Mode
-        // Comment out the method that's not used. The default below is POV.
-
-        // POV Mode uses left stick to go forward, and right stick to turn.
-        // - This uses basic math to combine motions and is easier to drive straight.
-        double drive = -gamepad1.left_stick_y;
-        double turn = gamepad1.right_stick_x;
-        leftPower = Range.clip(drive + turn, -1.0, 1.0);
-        rightPower = Range.clip(drive - turn, -1.0, 1.0);
 
         // Tank Mode uses one stick to control each wheel.
         // - This requires no math, but it is hard to drive forward slowly and keep
@@ -136,11 +98,11 @@ public class BaseBot extends OpMode {
         // Send calculated power to wheels
         // Drive(gamepad1.left_stick_x, -gamepad1.left_stick_y, gamepad1.right_stick_x);
         // Show the elapsed game time and wheel power.
-        telemetry.addData("Status", "Run Time: " + runtime.toString());
-        telemetry.addData("Front Left", frontLeft.getVelocity());
-        telemetry.addData("Front Right", frontRight.getVelocity());
-        telemetry.addData("Rear Right", rearRight.getVelocity());
-        telemetry.addData("Rear Left", rearLeft.getVelocity());
+        telemetry.addData("Status", "Running");
+        telemetry.addData("Front Left", Math.round(frontLeft.getSpeed() * 100));
+        telemetry.addData("Front Right", Math.round(frontRight.getSpeed() * 100));
+        telemetry.addData("Rear Right", Math.round(rearRight.getSpeed() * 100));
+        telemetry.addData("Rear Left", Math.round(rearLeft.getSpeed() * 100));
         /*
          * telemetry.addData("Front", "(%.2f) %S|-|%S (%.2f)",
          * frontLeft.getPower(), (frontLeft.getPower() == 0 ? '-' : frontLeft.getPower()
@@ -153,15 +115,8 @@ public class BaseBot extends OpMode {
          * rearRight.getPower(), (rearRight.getPower() == 0 ? '-' : rearRight.getPower()
          * > 0 ? '^' : 'v'));
          */
-        if (gamepad1.a) {
-            frontLeft.setPower(0.1);
-            frontRight.setPower(0.1);
-            rearLeft.setPower(0.1);
-            rearRight.setPower(0.1);
-        } else {
-            Drive(Math.pow(gamepad1.left_stick_x, 3), Math.pow(-gamepad1.left_stick_y, 3),
-                    Math.pow(gamepad1.right_stick_x, 3));
-        }
+        Drive(Math.pow(gamepad1.left_stick_x, 3), Math.pow(-gamepad1.left_stick_y, 3),
+                Math.pow(gamepad1.right_stick_x, 3));
     }
 
     /*
@@ -187,18 +142,10 @@ public class BaseBot extends OpMode {
          * rearLeft.setVelocity(m3);
          * rearRight.setVelocity(m4);
          */
-        frontLeft.setPower(m1);
-        telemetry.addData("Front Left Set", (int) (m1 * 100));
-        telemetry.addData("Front Left Get", (int) (frontLeft.getPower() * 100));
-        frontRight.setPower(m2);
-        telemetry.addData("Front Right Set", (int) (m2 * 100));
-        telemetry.addData("Front Right Get", (int) (frontRight.getPower() * 100));
-        rearLeft.setPower(m3);
-        telemetry.addData("Rear Left Set", (int) (m3 * 100));
-        telemetry.addData("Rear Left Get", (int) (rearLeft.getPower() * 100));
-        rearRight.setPower(m4);
-        telemetry.addData("Rear Rear Set", (int) (m4 * 100));
-        telemetry.addData("Rear Right Get", (int) (rearRight.getPower() * 100));
+        frontLeft.setSpeed(m1);
+        frontRight.setSpeed(m2);
+        rearLeft.setSpeed(m3);
+        rearRight.setSpeed(m4);
 
     }
 }
