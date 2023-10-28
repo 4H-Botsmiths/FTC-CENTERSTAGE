@@ -44,16 +44,16 @@ public class BaseBot extends OpMode {
      */
     @Override
     public void init() {
-        telemetry.addData("Status", "Initialized");
+        telemetry.addData("Status", "Initializing");
 
         // Initialize the hardware variables. Note that the strings used here as
         // parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
         frontLeft = new HDMotor(hardwareMap.get(DcMotorEx.class, "FrontLeft"));
-        frontRight = new HDMotor(hardwareMap.get(DcMotorEx.class, "FrontRight"));
-        rearLeft = new HDMotor(hardwareMap.get(DcMotorEx.class, "RearLeft"), DcMotor.Direction.REVERSE);
-        rearRight = new HDMotor(hardwareMap.get(DcMotorEx.class, "RearRight"), DcMotor.Direction.REVERSE);
+        frontRight = new HDMotor(hardwareMap.get(DcMotorEx.class, "FrontRight"), DcMotor.Direction.REVERSE);
+        rearLeft = new HDMotor(hardwareMap.get(DcMotorEx.class, "RearLeft"));
+        rearRight = new HDMotor(hardwareMap.get(DcMotorEx.class, "RearRight"));
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
         /*
@@ -65,7 +65,7 @@ public class BaseBot extends OpMode {
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
-        telemetry.addData("Front Left PIDF", "");
+        telemetry.update();
     }
 
     /*
@@ -115,8 +115,14 @@ public class BaseBot extends OpMode {
          * rearRight.getPower(), (rearRight.getPower() == 0 ? '-' : rearRight.getPower()
          * > 0 ? '^' : 'v'));
          */
-        Drive(Math.pow(gamepad1.left_stick_x, 3), Math.pow(-gamepad1.left_stick_y, 3),
-                Math.pow(gamepad1.right_stick_x, 3));
+        double x = 0.625 * gamepad1.left_stick_x + 0.375 * gamepad1.left_stick_x * gamepad1.right_trigger
+                - 0.375 * gamepad1.left_stick_x * gamepad1.left_trigger;
+        double y = 0.625 * -gamepad1.left_stick_y + 0.375 * -gamepad1.left_stick_y * gamepad1.right_trigger
+                - 0.375 * -gamepad1.left_stick_y * gamepad1.left_trigger;
+        double z = 0.625 * gamepad1.right_stick_x + 0.375 * gamepad1.right_stick_x * gamepad1.right_trigger
+                - 0.375 * gamepad1.right_stick_x * gamepad1.left_trigger;
+
+        Drive(x, y, z);
     }
 
     /*
