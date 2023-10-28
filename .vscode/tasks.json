@@ -15,7 +15,7 @@
     {
       "label": "Connect",
       "type": "shell",
-      "command": "adb reconnect offline && adb connect 192.168.43.1", //&& adb reconnect offline",
+      "command": "adb kill-server && adb connect 192.168.43.1", //&& adb reconnect offline",
       "problemMatcher": []
     },
     {
