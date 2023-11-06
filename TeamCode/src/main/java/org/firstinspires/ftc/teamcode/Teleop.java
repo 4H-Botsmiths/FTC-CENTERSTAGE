@@ -30,16 +30,16 @@ import com.qualcomm.robotcore.util.Range;
  * Station OpMode list
  */
 
-@TeleOp(name = "Competition", group = "A")
+@TeleOp(name = "Teleop", group = "A")
 // @Disabled
-public class Competition extends OpMode {
+public class Teleop extends OpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private HDMotor frontLeft = null;
     private HDMotor frontRight = null;
     private HDMotor rearLeft = null;
     private HDMotor rearRight = null;
-    private CoreMotor intake = null;
+    private DCMotor intake = null;
     private DCMotor leftRiser = null;
     private DCMotor rightRiser = null;
 
@@ -58,7 +58,7 @@ public class Competition extends OpMode {
         frontRight = new HDMotor(hardwareMap.get(DcMotorEx.class, "FrontRight"), DcMotor.Direction.REVERSE);
         rearLeft = new HDMotor(hardwareMap.get(DcMotorEx.class, "RearLeft"));
         rearRight = new HDMotor(hardwareMap.get(DcMotorEx.class, "RearRight"));
-        intake = new CoreMotor(hardwareMap.get(DcMotorEx.class, "Intake"));
+        intake = new DCMotor(hardwareMap.get(DcMotorEx.class, "Intake"));
         leftRiser = new DCMotor(hardwareMap.get(DcMotorEx.class, "LeftRiser"), DcMotor.Direction.REVERSE);
         rightRiser = new DCMotor(hardwareMap.get(DcMotorEx.class, "RightRiser"));
 
@@ -139,7 +139,7 @@ public class Competition extends OpMode {
             intake.setSpeed(-0.75);
         } else if (gamepad2.dpad_right) {
             // Eject Pixel (SLOWLY!)
-            intake.motor.setPower(1);
+            intake.setSpeed(1);
         } else {
             // Stop Intake
             intake.setSpeed(0);
