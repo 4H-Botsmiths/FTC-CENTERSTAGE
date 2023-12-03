@@ -46,6 +46,7 @@ public class Teleop extends OpMode {
     /*
      * Code to run ONCE when the driver hits INIT
      */
+    @Disabled // Disabled - for legacy purposes only
     @Override
     public void init() {
         telemetry.addData("Status", "Initializing");
