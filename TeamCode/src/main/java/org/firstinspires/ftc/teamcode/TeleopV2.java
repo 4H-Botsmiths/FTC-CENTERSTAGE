@@ -151,8 +151,8 @@ public class TeleopV2 extends OpMode {
         /** 0 = down; 1 = up */
         double elbowPosition = 0;
         leftElbow.setPosition(elbowPosition);
-        rightElbow.setPosition(-elbowPosition);
-        elbowPosition += -gamepad2.right_stick_y * 0.1;
+        rightElbow.setPosition(1 - elbowPosition);
+        elbowPosition += -gamepad2.right_stick_y * 0.01;
     }
 
     /*
