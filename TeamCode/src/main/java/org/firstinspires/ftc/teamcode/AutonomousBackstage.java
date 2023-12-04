@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.classes.DCMotor;
 import org.firstinspires.ftc.teamcode.classes.HDMotor;
 import org.firstinspires.ftc.teamcode.classes.CoreMotor;
@@ -12,15 +13,18 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import java.lang.Thread;
+import java.util.Timer;
 
 @Autonomous(name = "Autonomous Backstage", group = "A", preselectTeleOp = "Teleop")
 public class AutonomousBackstage extends OpMode {
   // Declare OpMode members.
   private ElapsedTime runtime = new ElapsedTime();
-  private HDMotor frontLeft = null;
-  private HDMotor frontRight = null;
-  private HDMotor rearLeft = null;
-  private HDMotor rearRight = null;
+  private DCMotor frontLeft = null;
+  private DCMotor frontRight = null;
+  private DCMotor rearLeft = null;
+  private DCMotor rearRight = null;
+
+  private Servo trapdoor = null;
   private DCMotor intake = null;
   private DCMotor leftRiser = null;
   private DCMotor rightRiser = null;
@@ -36,11 +40,12 @@ public class AutonomousBackstage extends OpMode {
     // parameters
     // to 'get' must correspond to the names assigned during the robot configuration
     // step (using the FTC Robot Controller app on the phone).
-    frontLeft = new HDMotor(hardwareMap.get(DcMotorEx.class, "FrontLeft"));
-    frontRight = new HDMotor(hardwareMap.get(DcMotorEx.class, "FrontRight"), DcMotor.Direction.REVERSE);
-    rearLeft = new HDMotor(hardwareMap.get(DcMotorEx.class, "RearLeft"));
-    rearRight = new HDMotor(hardwareMap.get(DcMotorEx.class, "RearRight"));
+    frontLeft = new DCMotor(hardwareMap.get(DcMotorEx.class, "FrontLeft"));
+    frontRight = new DCMotor(hardwareMap.get(DcMotorEx.class, "FrontRight"), DcMotor.Direction.REVERSE);
+    rearLeft = new DCMotor(hardwareMap.get(DcMotorEx.class, "RearLeft"));
+    rearRight = new DCMotor(hardwareMap.get(DcMotorEx.class, "RearRight"));
     intake = new DCMotor(hardwareMap.get(DcMotorEx.class, "Intake"));
+    trapdoor = hardwareMap.get(Servo.class, "Trapdoor");
     leftRiser = new DCMotor(hardwareMap.get(DcMotorEx.class, "LeftRiser"), DcMotor.Direction.REVERSE);
     rightRiser = new DCMotor(hardwareMap.get(DcMotorEx.class, "RightRiser"));
 
@@ -71,39 +76,31 @@ public class AutonomousBackstage extends OpMode {
   @Override
   public void start() {
     runtime.reset();
-    try {
-      // Robot will start facing away from backstage
-      /*
-       * Drive(-0.5, 0, 0); // Drive to the center of the field
-       * Thread.sleep(1750); // How long it takes the robot to get to the center of
-       * the field
-       * 
-       * Drive(0, 0, 0); // Briefly stop robot
-       * Thread.sleep(500);
-       * 
-       * Drive(0, -0.5, 0); // Drive backstage
-       * Thread.sleep(1500); // How long it takes the robot to get backstage
-       * 
-       * Drive(0, 0, 0); // Briefly stop robot
-       * Thread.sleep(500);
-       * 
-       * Drive(0.25, 0, 0); // Controlled crash into the side of the field
-       * Thread.sleep(4000); // How long it takes to hit the side of the field and
-       * straighten
-       * 
-       * Drive(0, 0, 0); // Briefly stop robot
-       * Thread.sleep(500);
-       */
+    // Robot will start facing away from backstage
+    /*
+     * Drive(-0.5, 0, 0); // Drive to the center of the field
+     * Thread.sleep(1750); // How long it takes the robot to get to the center of
+     * the field
+     * 
+     * Drive(0, 0, 0); // Briefly stop robot
+     * Thread.sleep(500);
+     * 
+     * Drive(0, -0.5, 0); // Drive backstage
+     * Thread.sleep(1500); // How long it takes the robot to get backstage
+     * 
+     * Drive(0, 0, 0); // Briefly stop robot
+     * Thread.sleep(500);
+     * 
+     * Drive(0.25, 0, 0); // Controlled crash into the side of the field
+     * Thread.sleep(4000); // How long it takes to hit the side of the field and
+     * straighten
+     * 
+     * Drive(0, 0, 0); // Briefly stop robot
+     * Thread.sleep(500);
+     */
 
-      Drive(0, -0.25, 0); // Controlled crash into the back of the field
-      Thread.sleep(2750); // How long it takes to hit the back of the field and straighten
+    Drive(0, -0.25, 0); // Controlled crash into the back of the field
 
-      Drive(0, 0, 0); // Stop robot
-
-      // Done
-    } catch (InterruptedException err) {
-      // Do Nothing
-    }
   }
 
   /*
@@ -111,6 +108,11 @@ public class AutonomousBackstage extends OpMode {
    */
   @Override
   public void loop() {
+    if (runtime.time() > 3.75) {// How long it takes to hit the back of the field and straighten
+      Drive(0, 0, 0); // Stop robot
+      trapdoor.setPosition(0);
+      intake.setSpeed(-0.75);
+    }
 
     // Tank Mode uses one stick to control each wheel.
     // - This requires no math, but it is hard to drive forward slowly and keep
@@ -121,7 +123,7 @@ public class AutonomousBackstage extends OpMode {
     // Send calculated power to wheels
     // Drive(gamepad1.left_stick_x, -gamepad1.left_stick_y, gamepad1.right_stick_x);
     // Show the elapsed game time and wheel power.
-    telemetry.addData("Status", "Running");
+    telemetry.addData("Status", "Running %f", (float) runtime.time());
     telemetry.addData("Front Left", Math.round(frontLeft.getSpeed() * 100));
     telemetry.addData("Front Right", Math.round(frontRight.getSpeed() * 100));
     telemetry.addData("Rear Right", Math.round(rearRight.getSpeed() * 100));
