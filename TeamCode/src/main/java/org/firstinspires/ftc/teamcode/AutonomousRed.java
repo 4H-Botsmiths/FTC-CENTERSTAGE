@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import org.firstinspires.ftc.teamcode.classes.DCMotor;
 import org.firstinspires.ftc.teamcode.classes.HDMotor;
 import org.firstinspires.ftc.teamcode.classes.CoreMotor;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -14,6 +15,7 @@ import com.qualcomm.robotcore.util.Range;
 import java.lang.Thread;
 
 @Autonomous(name = "Autonomous Red", group = "A", preselectTeleOp = "Teleop")
+@Disabled // Illegal
 public class AutonomousRed extends OpMode {
   // Declare OpMode members.
   private ElapsedTime runtime = new ElapsedTime();
