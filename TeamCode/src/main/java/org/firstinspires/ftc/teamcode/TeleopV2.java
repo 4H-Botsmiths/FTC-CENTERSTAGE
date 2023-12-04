@@ -36,10 +36,10 @@ import com.qualcomm.robotcore.util.Range;
 public class TeleopV2 extends OpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private HDMotor frontLeft = null;
-    private HDMotor frontRight = null;
-    private HDMotor rearLeft = null;
-    private HDMotor rearRight = null;
+    private DCMotor frontLeft = null;
+    private DCMotor frontRight = null;
+    private DCMotor rearLeft = null;
+    private DCMotor rearRight = null;
 
     private DCMotor intake = null;
     private DCMotor leftRiser = null;
@@ -59,10 +59,10 @@ public class TeleopV2 extends OpMode {
         // parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        frontLeft = new HDMotor(hardwareMap.get(DcMotorEx.class, "FrontLeft"));
-        frontRight = new HDMotor(hardwareMap.get(DcMotorEx.class, "FrontRight"), DcMotor.Direction.REVERSE);
-        rearLeft = new HDMotor(hardwareMap.get(DcMotorEx.class, "RearLeft"));
-        rearRight = new HDMotor(hardwareMap.get(DcMotorEx.class, "RearRight"));
+        frontLeft = new DCMotor(hardwareMap.get(DcMotorEx.class, "FrontLeft"));
+        frontRight = new DCMotor(hardwareMap.get(DcMotorEx.class, "FrontRight"), DcMotor.Direction.REVERSE);
+        rearLeft = new DCMotor(hardwareMap.get(DcMotorEx.class, "RearLeft"));
+        rearRight = new DCMotor(hardwareMap.get(DcMotorEx.class, "RearRight"));
 
         intake = new DCMotor(hardwareMap.get(DcMotorEx.class, "Intake"), DcMotor.Direction.REVERSE);
         leftRiser = new DCMotor(hardwareMap.get(DcMotorEx.class, "LeftRiser"), DcMotor.Direction.REVERSE);
@@ -117,6 +117,8 @@ public class TeleopV2 extends OpMode {
         Drive(x, y, z);
     }
 
+    double elbowPosition = 0;
+
     public void operatorLoop() {
         telemetry.addData("Intake", Math.round(rearLeft.getSpeed() * 100));
         telemetry.addData("Trapdoor", Math.round(trapdoor.getPosition() * 100));
@@ -145,14 +147,22 @@ public class TeleopV2 extends OpMode {
                 intake.setSpeed(gamepad2.left_trigger);
             }
         }
-        leftRiser.setSpeed(-gamepad2.left_stick_y);
-        rightRiser.setSpeed(gamepad2.left_stick_y);
+        leftRiser.setSpeed(gamepad2.left_stick_y * 0.5);
+        rightRiser.setSpeed(gamepad2.left_stick_y * 0.5);
 
         /** 0 = down; 1 = up */
-        double elbowPosition = 0;
-        leftElbow.setPosition(elbowPosition);
-        rightElbow.setPosition(1 - elbowPosition);
+        leftElbow.setPosition(1 - elbowPosition);
+        rightElbow.setPosition(elbowPosition);
         elbowPosition += -gamepad2.right_stick_y * 0.01;
+        final double lowerLimit = 0.03;
+        final double upperLimit = 0.4;
+        elbowPosition = elbowPosition > upperLimit ? upperLimit
+                : elbowPosition < lowerLimit ? lowerLimit : elbowPosition;
+
+        /*
+         * leftElbow.setPosition(-gamepad2.right_stick_y);
+         * rightElbow.setPosition(1 + gamepad2.right_stick_y);
+         */
     }
 
     /*
