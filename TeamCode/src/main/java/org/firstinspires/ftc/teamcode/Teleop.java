@@ -31,7 +31,7 @@ import com.qualcomm.robotcore.util.Range;
  */
 
 @TeleOp(name = "Teleop", group = "A")
-// @Disabled
+@Disabled // Disabled - for legacy purposes only
 public class Teleop extends OpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -46,7 +46,6 @@ public class Teleop extends OpMode {
     /*
      * Code to run ONCE when the driver hits INIT
      */
-    @Disabled // Disabled - for legacy purposes only
     @Override
     public void init() {
         telemetry.addData("Status", "Initializing");
