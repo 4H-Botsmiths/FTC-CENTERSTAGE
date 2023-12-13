@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.CameraName;
@@ -26,9 +27,9 @@ public class Camera {
   /*
    * Variables used for switching cameras.
    */
-  public Camera(WebcamName webcam1, WebcamName webcam2) {
-    this.webcam1 = webcam1;
-    this.webcam2 = webcam2;
+  public Camera(HardwareMap hardwareMap) {
+    this.webcam1 = hardwareMap.get(WebcamName.class, "Webcam 1");
+    this.webcam2 = hardwareMap.get(WebcamName.class, "Webcam 2");
   }
 
   private WebcamName webcam1, webcam2;

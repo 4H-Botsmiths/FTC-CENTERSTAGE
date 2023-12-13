@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+import org.firstinspires.ftc.teamcode.hardware.Robot;
 
 /**
  * This file contains an example of an iterative (Non-Linear) "OpMode".
@@ -39,18 +40,7 @@ import com.qualcomm.robotcore.util.Range;
 public class DualCameraTeleop extends OpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private DCMotor frontLeft = null;
-    private DCMotor frontRight = null;
-    private DCMotor rearLeft = null;
-    private DCMotor rearRight = null;
-
-    private DCMotor intake = null;
-    private DCMotor leftRiser = null;
-    private DCMotor rightRiser = null;
-    private Servo trapdoor = null;
-    private Servo leftElbow = null;
-    private Servo rightElbow = null;
-
+    private Robot robot = null;
     private Camera camera = null;
 
     /*
@@ -64,23 +54,8 @@ public class DualCameraTeleop extends OpMode {
         // parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        frontLeft = new DCMotor(hardwareMap.get(DcMotorEx.class, "FrontLeft"));
-        frontRight = new DCMotor(hardwareMap.get(DcMotorEx.class, "FrontRight"), DcMotor.Direction.REVERSE);
-        rearLeft = new DCMotor(hardwareMap.get(DcMotorEx.class, "RearLeft"));
-        rearRight = new DCMotor(hardwareMap.get(DcMotorEx.class, "RearRight"));
-
-        intake = new DCMotor(hardwareMap.get(DcMotorEx.class, "Intake"), DcMotor.Direction.REVERSE);
-        leftRiser = new DCMotor(hardwareMap.get(DcMotorEx.class, "LeftRiser"), DcMotor.Direction.REVERSE);
-        rightRiser = new DCMotor(hardwareMap.get(DcMotorEx.class, "RightRiser"));
-        trapdoor = hardwareMap.get(Servo.class, "Trapdoor");
-        leftElbow = hardwareMap.get(Servo.class, "LeftElbow");
-        rightElbow = hardwareMap.get(Servo.class, "RightElbow");
-        leftElbow.setDirection(Servo.Direction.REVERSE);
-        leftElbow.scaleRange(0.03, 0.4);
-        rightElbow.scaleRange(0.03, 0.4);
-
-        camera = new Camera(hardwareMap.get(WebcamName.class, "Webcam 1"),
-                hardwareMap.get(WebcamName.class, "Webcam 2"));
+        robot = new Robot(hardwareMap);
+        camera = new Camera(hardwareMap);
         camera.initAprilTag();
 
         // Most robots need the motor on one side to be reversed to drive forward
@@ -115,10 +90,10 @@ public class DualCameraTeleop extends OpMode {
     public boolean placingPixel = false;
 
     public void driverLoop() {
-        telemetry.addData("Front Left", Math.round(frontLeft.getSpeed() * 100));
-        telemetry.addData("Front Right", Math.round(frontRight.getSpeed() * 100));
-        telemetry.addData("Rear Right", Math.round(rearRight.getSpeed() * 100));
-        telemetry.addData("Rear Left", Math.round(rearLeft.getSpeed() * 100));
+        telemetry.addData("Front Left", Math.round(robot.frontLeft.getSpeed() * 100));
+        telemetry.addData("Front Right", Math.round(robot.frontRight.getSpeed() * 100));
+        telemetry.addData("Rear Right", Math.round(robot.rearRight.getSpeed() * 100));
+        telemetry.addData("Rear Left", Math.round(robot.rearLeft.getSpeed() * 100));
 
         if (!placingPixel) {
             double x = 0.625 * gamepad1.left_stick_x + 0.375 * gamepad1.left_stick_x * gamepad1.right_trigger
@@ -136,12 +111,12 @@ public class DualCameraTeleop extends OpMode {
     double elbowPosition = 0;
 
     public void operatorLoop() {
-        telemetry.addData("Intake", Math.round(rearLeft.getSpeed() * 100));
-        telemetry.addData("Trapdoor", Math.round(trapdoor.getPosition() * 100));
-        telemetry.addData("Lift", "Left: %d; Right: %d", Math.round(leftRiser.getSpeed() * 100),
-                Math.round(rightRiser.getSpeed() * 100));
-        telemetry.addData("Elbow", "Left: %d; Right: %d", Math.round(leftElbow.getPosition() * 100),
-                Math.round(rightElbow.getPosition() * 100));
+        telemetry.addData("Intake", Math.round(robot.rearLeft.getSpeed() * 100));
+        telemetry.addData("Trapdoor", Math.round(robot.trapdoor.getPosition() * 100));
+        telemetry.addData("Lift", "Left: %d; Right: %d", Math.round(robot.leftRiser.getSpeed() * 100),
+                Math.round(robot.rightRiser.getSpeed() * 100));
+        telemetry.addData("Elbow", "Left: %d; Right: %d", Math.round(robot.leftElbow.getPosition() * 100),
+                Math.round(robot.rightElbow.getPosition() * 100));
 
         if (!placingPixel) {
             /*
@@ -153,23 +128,23 @@ public class DualCameraTeleop extends OpMode {
              * > Elbow - right joystick
              */
             if (gamepad2.a) {
-                trapdoor.setPosition(0);
-                intake.setSpeed(0.2);
+                robot.trapdoor.setPosition(0);
+                robot.intake.setSpeed(0.2);
             } else {
-                trapdoor.setPosition(1);
+                robot.trapdoor.setPosition(1);
 
                 if (gamepad2.left_bumper) {
-                    intake.setSpeed(-gamepad2.left_trigger);
+                    robot.intake.setSpeed(-gamepad2.left_trigger);
                 } else {
-                    intake.setSpeed(gamepad2.left_trigger);
+                    robot.intake.setSpeed(gamepad2.left_trigger);
                 }
             }
-            leftRiser.setSpeed(gamepad2.left_stick_y * 0.5);
-            rightRiser.setSpeed(gamepad2.left_stick_y * 0.5);
+            robot.leftRiser.setSpeed(gamepad2.left_stick_y * 0.5);
+            robot.rightRiser.setSpeed(gamepad2.left_stick_y * 0.5);
 
             /** 0 = down; 1 = up */
-            leftElbow.setPosition(elbowPosition);
-            rightElbow.setPosition(elbowPosition);
+            robot.leftElbow.setPosition(elbowPosition);
+            robot.rightElbow.setPosition(elbowPosition);
             elbowPosition += -gamepad2.right_stick_y * 0.01;
             elbowPosition = elbowPosition > 1 ? 1 : elbowPosition < 0 ? 0 : elbowPosition;
             /*
@@ -180,8 +155,8 @@ public class DualCameraTeleop extends OpMode {
              */
 
             /*
-             * leftElbow.setPosition(-gamepad2.right_stick_y);
-             * rightElbow.setPosition(1 + gamepad2.right_stick_y);
+             * robot.leftElbow.setPosition(-gamepad2.right_stick_y);
+             * robot.rightElbow.setPosition(1 + gamepad2.right_stick_y);
              */
         }
     }
@@ -228,8 +203,8 @@ public class DualCameraTeleop extends OpMode {
     public boolean placePixel() {
         if (placementTask == PlacementTasks.RESETTING) {
             if (resetTask == PlacementTasks.DROPPING) {
-                trapdoor.setPosition(0);
-                intake.setSpeed(0);
+                robot.trapdoor.setPosition(0);
+                robot.intake.setSpeed(0);
                 resetTask = PlacementTasks.EXTENDING;
                 placementClock.reset();
             } else if (resetTask == PlacementTasks.REALIGNING || resetTask == PlacementTasks.REALIGNED) {
@@ -242,18 +217,18 @@ public class DualCameraTeleop extends OpMode {
                     resetTask = PlacementTasks.RAISING;
                     placementClock.reset();
                 } else {
-                    leftElbow.setPosition(0);
-                    rightElbow.setPosition(0);
+                    robot.leftElbow.setPosition(0);
+                    robot.rightElbow.setPosition(0);
                 }
             } else if (resetTask == PlacementTasks.RAISING) {
                 if (placementClock.milliseconds() > RAISE_DURATION) {
                     resetTask = PlacementTasks.NONE;
                     placementClock.reset();
-                    leftRiser.setSpeed(0);
-                    rightRiser.setSpeed(0);
+                    robot.leftRiser.setSpeed(0);
+                    robot.rightRiser.setSpeed(0);
                 } else {
-                    leftRiser.setSpeed(-0.5);
-                    rightRiser.setSpeed(-0.5);
+                    robot.leftRiser.setSpeed(-0.5);
+                    robot.rightRiser.setSpeed(-0.5);
                 }
             } else if (resetTask == PlacementTasks.ALIGNING || resetTask == PlacementTasks.ALIGNED) {
                 camera.setCamera(Camera.ActiveCamera.NONE);
@@ -314,8 +289,8 @@ public class DualCameraTeleop extends OpMode {
                             if (placementTask == PlacementTasks.ALIGNING) {
                                 placementTask = PlacementTasks.RAISING;
                                 placementClock.reset();
-                                leftRiser.setSpeed(0.5);
-                                rightRiser.setSpeed(0.5);
+                                robot.leftRiser.setSpeed(0.5);
+                                robot.rightRiser.setSpeed(0.5);
                             }
                         } else {
                             if (placementTask == PlacementTasks.RAISING || (placementTask == PlacementTasks.EXTENDING
@@ -323,8 +298,8 @@ public class DualCameraTeleop extends OpMode {
                                 if (placementTask == PlacementTasks.RAISING) {
                                     placementTask = PlacementTasks.EXTENDING;
                                     placementClock.reset();
-                                    leftElbow.setPosition(1);
-                                    rightElbow.setPosition(1);
+                                    robot.leftElbow.setPosition(1);
+                                    robot.rightElbow.setPosition(1);
                                 }
                             } else {
                                 if (placementTask == PlacementTasks.EXTENDING
@@ -344,8 +319,8 @@ public class DualCameraTeleop extends OpMode {
                                 } else if (placementTask == PlacementTasks.REALIGNED) {
                                     placementTask = PlacementTasks.DROPPING;
                                     camera.setCamera(Camera.ActiveCamera.NONE);
-                                    trapdoor.setPosition(1);
-                                    intake.setSpeed(0.3);
+                                    robot.trapdoor.setPosition(1);
+                                    robot.intake.setSpeed(0.3);
                                 }
                             }
 
@@ -425,10 +400,10 @@ public class DualCameraTeleop extends OpMode {
          * rearLeft.setVelocity(m3);
          * rearRight.setVelocity(m4);
          */
-        frontLeft.setSpeed(m1);
-        frontRight.setSpeed(m2);
-        rearLeft.setSpeed(m3);
-        rearRight.setSpeed(m4);
+        robot.frontLeft.setSpeed(m1);
+        robot.frontRight.setSpeed(m2);
+        robot.rearLeft.setSpeed(m3);
+        robot.rearRight.setSpeed(m4);
 
     }
 }
