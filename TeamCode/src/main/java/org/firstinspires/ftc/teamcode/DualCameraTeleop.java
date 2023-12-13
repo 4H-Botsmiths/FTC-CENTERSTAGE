@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import org.firstinspires.ftc.teamcode.classes.DCMotor;
 import org.firstinspires.ftc.teamcode.classes.HDMotor;
 import org.firstinspires.ftc.teamcode.classes.CoreMotor;
@@ -70,6 +71,9 @@ public class DualCameraTeleop extends OpMode {
         trapdoor = hardwareMap.get(Servo.class, "Trapdoor");
         leftElbow = hardwareMap.get(Servo.class, "LeftElbow");
         rightElbow = hardwareMap.get(Servo.class, "RightElbow");
+        leftElbow.setDirection(Servo.Direction.REVERSE);
+        leftElbow.scaleRange(0.03, 0.4);
+        rightElbow.scaleRange(0.03, 0.4);
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -100,21 +104,25 @@ public class DualCameraTeleop extends OpMode {
         runtime.reset();
     }
 
+    public boolean placingPixel = false;
+
     public void driverLoop() {
         telemetry.addData("Front Left", Math.round(frontLeft.getSpeed() * 100));
         telemetry.addData("Front Right", Math.round(frontRight.getSpeed() * 100));
         telemetry.addData("Rear Right", Math.round(rearRight.getSpeed() * 100));
         telemetry.addData("Rear Left", Math.round(rearLeft.getSpeed() * 100));
 
-        double x = 0.625 * gamepad1.left_stick_x + 0.375 * gamepad1.left_stick_x * gamepad1.right_trigger
-                - 0.375 * gamepad1.left_stick_x * gamepad1.left_trigger;
-        double y = 0.625 * -gamepad1.left_stick_y + 0.375 * -gamepad1.left_stick_y * gamepad1.right_trigger
-                - 0.375 * -gamepad1.left_stick_y * gamepad1.left_trigger;
-        double z = 0.625 * gamepad1.right_stick_x + 0.375 * gamepad1.right_stick_x * gamepad1.right_trigger
-                - 0.375 * gamepad1.right_stick_x * gamepad1.left_trigger;
+        if (!placingPixel) {
+            double x = 0.625 * gamepad1.left_stick_x + 0.375 * gamepad1.left_stick_x * gamepad1.right_trigger
+                    - 0.375 * gamepad1.left_stick_x * gamepad1.left_trigger;
+            double y = 0.625 * -gamepad1.left_stick_y + 0.375 * -gamepad1.left_stick_y * gamepad1.right_trigger
+                    - 0.375 * -gamepad1.left_stick_y * gamepad1.left_trigger;
+            double z = 0.625 * gamepad1.right_stick_x + 0.375 * gamepad1.right_stick_x * gamepad1.right_trigger
+                    - 0.375 * gamepad1.right_stick_x * gamepad1.left_trigger;
 
-        // Drive System
-        Drive(x, y, z);
+            // Drive System
+            Drive(x, y, z);
+        }
     }
 
     double elbowPosition = 0;
@@ -127,42 +135,47 @@ public class DualCameraTeleop extends OpMode {
         telemetry.addData("Elbow", "Left: %d; Right: %d", Math.round(leftElbow.getPosition() * 100),
                 Math.round(rightElbow.getPosition() * 100));
 
-        /*
-         * NOTES:
-         * what needs to be controlled:
-         * > Intake - left trigger DONE
-         * > Trapdoor - a DONE
-         * > Lift - left joystick DONE
-         * > Elbow - right joystick
-         */
-        if (gamepad2.a) {
-            trapdoor.setPosition(0);
-            intake.setSpeed(0.2);
-        } else {
-            trapdoor.setPosition(1);
-
-            if (gamepad2.left_bumper) {
-                intake.setSpeed(-gamepad2.left_trigger);
+        if (!placingPixel) {
+            /*
+             * NOTES:
+             * what needs to be controlled:
+             * > Intake - left trigger DONE
+             * > Trapdoor - a DONE
+             * > Lift - left joystick DONE
+             * > Elbow - right joystick
+             */
+            if (gamepad2.a) {
+                trapdoor.setPosition(0);
+                intake.setSpeed(0.2);
             } else {
-                intake.setSpeed(gamepad2.left_trigger);
+                trapdoor.setPosition(1);
+
+                if (gamepad2.left_bumper) {
+                    intake.setSpeed(-gamepad2.left_trigger);
+                } else {
+                    intake.setSpeed(gamepad2.left_trigger);
+                }
             }
+            leftRiser.setSpeed(gamepad2.left_stick_y * 0.5);
+            rightRiser.setSpeed(gamepad2.left_stick_y * 0.5);
+
+            /** 0 = down; 1 = up */
+            leftElbow.setPosition(elbowPosition);
+            rightElbow.setPosition(elbowPosition);
+            elbowPosition += -gamepad2.right_stick_y * 0.01;
+            elbowPosition = elbowPosition > 1 ? 1 : elbowPosition < 0 ? 0 : elbowPosition;
+            /*
+             * final double lowerLimit = 0.03;
+             * final double upperLimit = 0.4;
+             * elbowPosition = elbowPosition > upperLimit ? upperLimit
+             * : elbowPosition < lowerLimit ? lowerLimit : elbowPosition;
+             */
+
+            /*
+             * leftElbow.setPosition(-gamepad2.right_stick_y);
+             * rightElbow.setPosition(1 + gamepad2.right_stick_y);
+             */
         }
-        leftRiser.setSpeed(gamepad2.left_stick_y * 0.5);
-        rightRiser.setSpeed(gamepad2.left_stick_y * 0.5);
-
-        /** 0 = down; 1 = up */
-        leftElbow.setPosition(1 - elbowPosition);
-        rightElbow.setPosition(elbowPosition);
-        elbowPosition += -gamepad2.right_stick_y * 0.01;
-        final double lowerLimit = 0.03;
-        final double upperLimit = 0.4;
-        elbowPosition = elbowPosition > upperLimit ? upperLimit
-                : elbowPosition < lowerLimit ? lowerLimit : elbowPosition;
-
-        /*
-         * leftElbow.setPosition(-gamepad2.right_stick_y);
-         * rightElbow.setPosition(1 + gamepad2.right_stick_y);
-         */
     }
 
     /*
@@ -188,6 +201,167 @@ public class DualCameraTeleop extends OpMode {
      * 
      * DONE
      */
+    enum PixelPosition {
+        NONE, LEFT, CENTER, RIGHT
+    }
+
+    enum PlacementTasks {
+        NONE, ALIGNING, RAISING, EXTENDING, REALIGNING, DROPPING, RESETTING
+    }
+
+    public PixelPosition pixelPosition = PixelPosition.NONE;
+    public PlacementTasks placementTask = PlacementTasks.NONE;
+    public PlacementTasks resetTask = PlacementTasks.NONE;
+    public ElapsedTime placementClock = new ElapsedTime();
+
+    public final int RAISE_DURATION = 1000;
+    public final int EXTEND_DURATION = 1000;
+
+    public boolean placePixel() {
+        if (placementTask == PlacementTasks.RESETTING) {
+            if (resetTask == PlacementTasks.DROPPING) {
+                trapdoor.setPosition(0);
+                intake.setSpeed(0);
+                resetTask = PlacementTasks.EXTENDING;
+                placementClock.reset();
+            } else if (resetTask == PlacementTasks.REALIGNING) {
+                Drive(0, 0, 0);
+                resetTask = PlacementTasks.EXTENDING;
+                placementClock.reset();
+            } else if (resetTask == PlacementTasks.EXTENDING) {
+                if (placementClock.milliseconds() > EXTEND_DURATION) {
+                    resetTask = PlacementTasks.RAISING;
+                    placementClock.reset();
+                } else {
+                    leftElbow.setPosition(0);
+                    rightElbow.setPosition(0);
+                }
+            } else if (resetTask == PlacementTasks.RAISING) {
+                if (placementClock.milliseconds() > RAISE_DURATION) {
+                    resetTask = PlacementTasks.NONE;
+                    placementClock.reset();
+                    leftRiser.setSpeed(0);
+                    rightRiser.setSpeed(0);
+                } else {
+                    leftRiser.setSpeed(-0.5);
+                    rightRiser.setSpeed(-0.5);
+                }
+            } else if (resetTask == PlacementTasks.ALIGNING) {
+                Drive(0, 0, 0);
+                resetTask = PlacementTasks.NONE;
+                placementClock.reset();
+            } else if (resetTask == PlacementTasks.NONE) {
+                placementTask = PlacementTasks.NONE;
+            }
+            return false;
+        } else {
+            PixelPosition driverChoice = PixelPosition.NONE;
+            if (gamepad1.x) {
+                driverChoice = PixelPosition.LEFT;
+            } else if (gamepad1.a) {
+                driverChoice = PixelPosition.CENTER;
+            } else if (gamepad1.b) {
+                driverChoice = PixelPosition.RIGHT;
+            }
+            PixelPosition operatorChoice = PixelPosition.NONE;
+            if (gamepad1.x) {
+                operatorChoice = PixelPosition.LEFT;
+            } else if (gamepad1.a) {
+                operatorChoice = PixelPosition.CENTER;
+            } else if (gamepad1.b) {
+                operatorChoice = PixelPosition.RIGHT;
+            }
+            if (driverChoice == operatorChoice) {
+                if (driverChoice == PixelPosition.NONE) {
+                    if (pixelPosition != PixelPosition.NONE) {
+                        resetTask = placementTask;
+                        placementTask = PlacementTasks.RESETTING;
+                        placementClock.reset();
+                    }
+                    gamepad1.stopRumble();
+                    gamepad2.stopRumble();
+                    // placementTask = PlacementTasks.NONE;
+                    return false;
+                } else {
+                    pixelPosition = driverChoice;
+                    boolean aligned = false;
+                    switch (pixelPosition) {
+                        case LEFT:
+                            // Logic for placing pixel on the left side
+                            break;
+                        case CENTER:
+                            // Logic for placing pixel on the center
+                            break;
+                        case RIGHT:
+                            // Logic for placing pixel on the right side
+                            break;
+                    }
+                    if (aligned) {
+                        if (placementTask == PlacementTasks.ALIGNING || (placementTask == PlacementTasks.RAISING
+                                && placementClock.milliseconds() < RAISE_DURATION)) {
+                            if (placementTask == PlacementTasks.ALIGNING) {
+                                placementTask = PlacementTasks.RAISING;
+                                placementClock.reset();
+                                leftRiser.setSpeed(0.5);
+                                rightRiser.setSpeed(0.5);
+                            }
+                        } else {
+                            if (placementTask == PlacementTasks.RAISING || (placementTask == PlacementTasks.EXTENDING
+                                    && placementClock.milliseconds() < EXTEND_DURATION)) {
+                                if (placementTask == PlacementTasks.RAISING) {
+                                    placementTask = PlacementTasks.EXTENDING;
+                                    placementClock.reset();
+                                    leftElbow.setPosition(1);
+                                    rightElbow.setPosition(1);
+                                }
+                            } else {
+                                if (true /* Logic for determining if robot is the proper distance from the board */) {
+
+                                } else {
+                                    trapdoor.setPosition(1);
+                                    intake.setSpeed(0.3);
+                                }
+                            }
+
+                        }
+                    }
+                    return true;
+                }
+            } else {
+                pixelPosition = PixelPosition.NONE;
+                switch (driverChoice) {
+                    case NONE:
+                        gamepad2.stopRumble();
+                        break;
+                    case LEFT:
+                        gamepad2.rumble(1, 0, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+                        break;
+                    case CENTER:
+                        gamepad2.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+                        break;
+                    case RIGHT:
+                        gamepad2.rumble(0, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+                        break;
+                }
+                switch (operatorChoice) {
+                    case NONE:
+                        gamepad1.stopRumble();
+                        break;
+                    case LEFT:
+                        gamepad1.rumble(1, 0, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+                        break;
+                    case CENTER:
+                        gamepad1.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+                        break;
+                    case RIGHT:
+                        gamepad1.rumble(0, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+                        break;
+                }
+                placementTask = PlacementTasks.NONE;
+                return false;
+            }
+        }
+    }
 
     /*
      * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
@@ -196,8 +370,10 @@ public class DualCameraTeleop extends OpMode {
     public void loop() {
         telemetry.addData("Status", "Running");
 
-        driverLoop();
-        operatorLoop();
+        if (!placePixel()) {
+            driverLoop();
+            operatorLoop();
+        }
     }
 
     /*
