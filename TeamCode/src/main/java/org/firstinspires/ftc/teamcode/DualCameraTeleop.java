@@ -2,8 +2,10 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.classes.DCMotor;
 import org.firstinspires.ftc.teamcode.classes.HDMotor;
+import org.firstinspires.ftc.teamcode.hardware.Camera;
 import org.firstinspires.ftc.teamcode.classes.CoreMotor;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -49,6 +51,8 @@ public class DualCameraTeleop extends OpMode {
     private Servo leftElbow = null;
     private Servo rightElbow = null;
 
+    private Camera camera = null;
+
     /*
      * Code to run ONCE when the driver hits INIT
      */
@@ -74,6 +78,10 @@ public class DualCameraTeleop extends OpMode {
         leftElbow.setDirection(Servo.Direction.REVERSE);
         leftElbow.scaleRange(0.03, 0.4);
         rightElbow.scaleRange(0.03, 0.4);
+
+        camera = new Camera(hardwareMap.get(WebcamName.class, "Webcam 1"),
+                hardwareMap.get(WebcamName.class, "Webcam 2"));
+        camera.initAprilTag();
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -206,7 +214,7 @@ public class DualCameraTeleop extends OpMode {
     }
 
     enum PlacementTasks {
-        NONE, ALIGNING, RAISING, EXTENDING, REALIGNING, DROPPING, RESETTING
+        NONE, ALIGNING, ALIGNED, RAISING, EXTENDING, REALIGNING, REALIGNED, DROPPING, RESETTING
     }
 
     public PixelPosition pixelPosition = PixelPosition.NONE;
@@ -224,7 +232,8 @@ public class DualCameraTeleop extends OpMode {
                 intake.setSpeed(0);
                 resetTask = PlacementTasks.EXTENDING;
                 placementClock.reset();
-            } else if (resetTask == PlacementTasks.REALIGNING) {
+            } else if (resetTask == PlacementTasks.REALIGNING || resetTask == PlacementTasks.REALIGNED) {
+                camera.setCamera(Camera.ActiveCamera.NONE);
                 Drive(0, 0, 0);
                 resetTask = PlacementTasks.EXTENDING;
                 placementClock.reset();
@@ -246,7 +255,8 @@ public class DualCameraTeleop extends OpMode {
                     leftRiser.setSpeed(-0.5);
                     rightRiser.setSpeed(-0.5);
                 }
-            } else if (resetTask == PlacementTasks.ALIGNING) {
+            } else if (resetTask == PlacementTasks.ALIGNING || resetTask == PlacementTasks.ALIGNED) {
+                camera.setCamera(Camera.ActiveCamera.NONE);
                 Drive(0, 0, 0);
                 resetTask = PlacementTasks.NONE;
                 placementClock.reset();
@@ -284,20 +294,22 @@ public class DualCameraTeleop extends OpMode {
                     return false;
                 } else {
                     pixelPosition = driverChoice;
-                    boolean aligned = false;
-                    switch (pixelPosition) {
-                        case LEFT:
-                            // Logic for placing pixel on the left side
-                            break;
-                        case CENTER:
-                            // Logic for placing pixel on the center
-                            break;
-                        case RIGHT:
-                            // Logic for placing pixel on the right side
-                            break;
-                    }
-                    if (aligned) {
-                        if (placementTask == PlacementTasks.ALIGNING || (placementTask == PlacementTasks.RAISING
+                    if (placementTask == PlacementTasks.NONE || placementTask == PlacementTasks.ALIGNING) {
+                        placementTask = PlacementTasks.ALIGNING;
+                        switch (pixelPosition) {
+                            case LEFT:
+                                // Logic for placing pixel on the left side
+                                break;
+                            case CENTER:
+                                // Logic for placing pixel on the center
+                                break;
+                            case RIGHT:
+                                // Logic for placing pixel on the right side
+                                break;
+                        }
+                    } else {
+                        camera.setCamera(Camera.ActiveCamera.NONE);
+                        if (placementTask == PlacementTasks.ALIGNED || (placementTask == PlacementTasks.RAISING
                                 && placementClock.milliseconds() < RAISE_DURATION)) {
                             if (placementTask == PlacementTasks.ALIGNING) {
                                 placementTask = PlacementTasks.RAISING;
@@ -315,9 +327,23 @@ public class DualCameraTeleop extends OpMode {
                                     rightElbow.setPosition(1);
                                 }
                             } else {
-                                if (true /* Logic for determining if robot is the proper distance from the board */) {
-
-                                } else {
+                                if (placementTask == PlacementTasks.EXTENDING
+                                        || placementTask == PlacementTasks.REALIGNING) {
+                                    placementTask = PlacementTasks.REALIGNING;
+                                    switch (pixelPosition) {
+                                        case LEFT:
+                                            // Logic for placing pixel on the left side
+                                            break;
+                                        case CENTER:
+                                            // Logic for placing pixel on the center
+                                            break;
+                                        case RIGHT:
+                                            // Logic for placing pixel on the right side
+                                            break;
+                                    }
+                                } else if (placementTask == PlacementTasks.REALIGNED) {
+                                    placementTask = PlacementTasks.DROPPING;
+                                    camera.setCamera(Camera.ActiveCamera.NONE);
                                     trapdoor.setPosition(1);
                                     intake.setSpeed(0.3);
                                 }
