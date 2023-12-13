@@ -1,4 +1,11 @@
 {
   "android-dev-ext.appSourceRoot": "TeamCode/src/main",
-  "java.server.launchMode": "LightWeight"
+  "java.server.launchMode": "LightWeight",
+  "cSpell.words": [
+    "firstinspires",
+    "gamepad",
+    "opmode",
+    "teamcode",
+    "teleop"
+  ]
 }
