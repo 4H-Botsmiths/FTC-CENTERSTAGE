@@ -122,6 +122,8 @@ public class ConceptAprilTag extends LinearOpMode {
 
         // Create the AprilTag processor.
         aprilTag = new AprilTagProcessor.Builder()
+                .setDrawAxes(true)
+                .setDrawCubeProjection(true)
 
                 // The following default settings are available to un-comment and edit as
                 // needed.
@@ -186,12 +188,6 @@ public class ConceptAprilTag extends LinearOpMode {
 
     } // end method initAprilTag()
 
-    public Offset offset = Offset.GOOD;
-
-    public enum Offset {
-        LEFT, RIGHT, GOOD
-    }
-
     // ! Use X, Y and bearing to determine alignment
     /**
      * Add telemetry about AprilTag detections.
@@ -203,18 +199,6 @@ public class ConceptAprilTag extends LinearOpMode {
 
         // Step through the list of detections and display info for each one.
         for (AprilTagDetection detection : currentDetections) {
-            if (detection.id == 3) {
-                if (detection.ftcPose.x < 1 && offset != Offset.LEFT) {
-                    telemetry.speak("Left");
-                    offset = Offset.LEFT;
-                } else if (detection.ftcPose.x > 1 && offset != Offset.RIGHT) {
-                    telemetry.speak("Right");
-                    offset = Offset.RIGHT;
-                } else if (detection.ftcPose.x > -1 && detection.ftcPose.x < 1 && offset != Offset.GOOD) {
-                    telemetry.speak("Good");
-                    offset = Offset.GOOD;
-                }
-            }
             if (detection.metadata != null) {
                 telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
                 telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x,
