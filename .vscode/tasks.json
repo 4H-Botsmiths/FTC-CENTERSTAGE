@@ -5,17 +5,39 @@
       "label": "Deploy",
       "type": "shell",
       "dependsOn": [
-        "Connect",
+        "Reconnect",
         "Install",
         "Launch"
       ],
       "dependsOrder": "sequence",
       "problemMatcher": []
     },
-    {
-      "label": "Connect",
+        {
+      "label": "Deploy & Watch",
       "type": "shell",
-      "command": "adb kill-server && adb connect 192.168.43.1", //&& adb reconnect offline",
+      "dependsOn": [
+        "Reconnect",
+        "Install",
+        "Launch",
+        "Watch"
+      ],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    },
+    {
+      "label": "Reconnect",
+      "type": "shell",
+      "command": "killall adb ; adb connect 192.168.43.1", //&& adb reconnect offline",
+      "problemMatcher": []
+    },
+        {
+      "label": "Install & Launch",
+      "type": "shell",
+      "dependsOn": [
+        "Install",
+        "Launch"
+      ],
+      "dependsOrder": "sequence",
       "problemMatcher": []
     },
     {
@@ -33,6 +55,12 @@
       "label": "Launch",
       "type": "shell",
       "command": "adb shell am start -n \"com.qualcomm.ftcrobotcontroller/org.firstinspires.ftc.robotcontroller.internal.PermissionValidatorWrapper\" -a android.intent.action.MAIN -c android.intent.category.LAUNCHER",
+      "problemMatcher": [],
+    },
+        {
+      "label": "Watch",
+      "type": "shell",
+      "command": "scrcpy",
       "problemMatcher": [],
     },
     {
