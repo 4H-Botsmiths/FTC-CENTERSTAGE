@@ -257,6 +257,7 @@ public class CameraTeleop extends OpMode {
   }
 
   public final double sensitivity = 0.25;
+  public final double speedLimit = 0.2;
 
   public void placePixel(Camera.AprilTagPosition position) {
     try {
@@ -277,9 +278,12 @@ public class CameraTeleop extends OpMode {
                             currentDetection.ftcPose.yaw > 1 ? -0.1
                                     : currentDetection.ftcPose.yaw < -1 ? 0.1 : 0);
           */
-          Drive(Range.clip((tag.ftcPose.x / 2) * sensitivity, -0.1, 0.1),
-              Range.clip(((tag.ftcPose.y - 20) / 2) * sensitivity, -0.1, 0.1),
-              Range.clip((tag.ftcPose.yaw / 2) * -sensitivity, -0.1, 0.1));
+          Drive(Range.clip((tag.ftcPose.x / 2) * sensitivity, -speedLimit, speedLimit),
+              Range.clip(((tag.ftcPose.y - 20) / 2) * sensitivity, -speedLimit, speedLimit),
+              Range.clip((tag.ftcPose.yaw / 2) * -sensitivity, -speedLimit, speedLimit));
+        } else {
+          Drive(0, 0, 0);
+          //TODO:
         }
       } catch (Camera.CameraNotStreamingException e) {
         //Do nothing, the camera should be starting
