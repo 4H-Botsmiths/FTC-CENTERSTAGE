@@ -275,7 +275,7 @@ public class CameraTeleop extends OpMode {
                             currentDetection.ftcPose.yaw > 1 ? -0.1
                                     : currentDetection.ftcPose.yaw < -1 ? 0.1 : 0);
           */
-          Drive((tag.ftcPose.x / 3) * 0.1, ((tag.ftcPose.y - 20) / 3) * 0.1, (tag.ftcPose.yaw / 3) * 0.1);
+          Drive((tag.ftcPose.x / 3) * 0.1, ((tag.ftcPose.y - 20) / 3) * 0.1, (tag.ftcPose.yaw / 3) * -0.1);
         }
       } catch (Camera.CameraNotStreamingException e) {
         //Do nothing, the camera should be starting
