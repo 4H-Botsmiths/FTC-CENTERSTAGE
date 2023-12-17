@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import java.util.List;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.classes.DCMotor;
 import org.firstinspires.ftc.teamcode.classes.HDMotor;
@@ -16,7 +17,6 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
-import org.firstinspires.ftc.teamcode.hardware.Camera.CameraNotAttachedException;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 /**
@@ -60,7 +60,7 @@ public class CameraTeleop extends OpMode {
     camera = new Camera(hardwareMap);
     try {
       camera.initAprilTag();
-    } catch (CameraNotAttachedException e) {
+    } catch (Camera.CameraNotAttachedException e) {
       //TODO: How should this be handled?
     }
 
@@ -190,67 +190,6 @@ public class CameraTeleop extends OpMode {
     NONE, LEFT, CENTER, RIGHT
   }
 
-  enum PlacementTasks {
-    NONE, ALIGNING, ALIGNED, RAISING, RAISED, EXTENDING, EXTENDED, REALIGNING, REALIGNED, DROPPING, RESETTING
-  }
-
-  public final int RAISE_DURATION = 4000;
-  public final int EXTEND_DURATION = 1000;
-
-  enum BasicPlacementTasks {
-    NONE, ALIGNING, RAISING, EXTENDING, REALIGNING, DROPPING
-  }
-
-  BasicPlacementTasks lastResetTask = BasicPlacementTasks.NONE;
-  ElapsedTime resetClock = new ElapsedTime();
-
-  @SuppressWarnings("fallthrough")
-  private BasicPlacementTasks reset(BasicPlacementTasks resetTask) {
-    switch (resetTask) {
-      case DROPPING:
-        placementTask = PlacementTasks.DROPPING;
-        robot.trapdoor.setPosition(1);
-        robot.intake.setSpeed(0);
-      case REALIGNING:
-        placementTask = PlacementTasks.REALIGNING;
-        Drive(0, 0, 0);
-        resetClock.reset();
-        lastResetTask = BasicPlacementTasks.REALIGNING;
-      case EXTENDING:
-        placementTask = PlacementTasks.EXTENDING;
-        if (lastResetTask != BasicPlacementTasks.EXTENDING) {
-          resetClock.reset();
-        }
-        lastResetTask = BasicPlacementTasks.EXTENDING;
-        robot.leftElbow.setPosition(0);
-        robot.rightElbow.setPosition(0);
-        if (resetClock.milliseconds() < EXTEND_DURATION) {
-          return BasicPlacementTasks.EXTENDING;
-        }
-      case RAISING:
-        placementTask = PlacementTasks.RAISING;
-        if (lastResetTask != BasicPlacementTasks.RAISING) {
-          resetClock.reset();
-        }
-        lastResetTask = BasicPlacementTasks.RAISING;
-        robot.leftRiser.setSpeed(-0.5);
-        robot.rightRiser.setSpeed(-0.5);
-        if (resetClock.milliseconds() > RAISE_DURATION) {
-          robot.leftRiser.setSpeed(0);
-          robot.rightRiser.setSpeed(0);
-        } else {
-          return BasicPlacementTasks.RAISING;
-        }
-      case ALIGNING:
-        placementTask = PlacementTasks.ALIGNING;
-        Drive(0, 0, 0);
-      case NONE:
-        placementTask = PlacementTasks.NONE;
-        return BasicPlacementTasks.NONE;
-    }
-    throw new IllegalStateException("Reset switch-case never returned!");
-  }
-
   public PixelPosition getPosition() {
     PixelPosition driverChoice = PixelPosition.NONE;
     if (gamepad1.x) {
@@ -305,165 +244,51 @@ public class CameraTeleop extends OpMode {
     }
   }
 
-  public PlacementTasks placementTask = PlacementTasks.NONE;
-  public ElapsedTime placementClock = new ElapsedTime();
-
-  /*@SuppressWarnings("fallthrough")
-  public BasicPlacementTasks placePixel(PixelPosition position) {
-    
-    switch (placementTask) {
-      case NONE:
-        placementTask = PlacementTasks.ALIGNING;
-      case ALIGNING:
-        boolean aligned = false;
-        switch (position) {
-          case LEFT:
-            // Logic for placing pixel on the left side
-            break;
-          case CENTER:
-            // Logic for placing pixel on the center
-            try {
-              AprilTagDetection tag = camera.getAprilTag(Camera.AprilTagPositions.RIGHT);
-              //TODO: Refine algorithim
-              if ((tag.ftcPose.x < 1 && tag.ftcPose.x > -1)
-                  && (tag.ftcPose.range < 12 && tag.ftcPose.range > 10)
-                  && (tag.ftcPose.yaw < 1 && tag.ftcPose.yaw > -1)) {
-                aligned = true;
-              } else {
-                Drive(tag.ftcPose.x > 1 ? 0.1 : tag.ftcPose.x < -1 ? -0.1 : 0,
-                    tag.ftcPose.range > 12 ? 0.1
-                        : tag.ftcPose.range < 10 ? -0.1 : 0,
-                    tag.ftcPose.yaw > 1 ? -0.1
-                        : tag.ftcPose.yaw < -1 ? 0.1 : 0);
-              }
-            } catch (Camera.TagNotFound _e) {
-              try {
-                switch (camera.getAvalableAprilTags()) {
-                  case CENTER:
-                    //TODO
-                  case RIGHT:
-                    //TODO
-                }
-              } catch (Camera.NoTagsFound __e) {
-                telemetry.addLine("Error: " + __e.getMessage());
-                Drive(0, 0, 0);
-              } catch (Camera.CameraNotStreaming __e) {
-                Drive(0, 0, 0);
-                // Do Nothing, calling this function enables the camera stream
-              } catch (Exception __e) {
-                telemetry.addLine("Error: " + __e.getMessage());
-              }
-            } catch (Camera.NoTagsFound _e) {
-              Drive(0, 0, 0);
-            } catch (Camera.CameraNotStreaming _e) {
-              Drive(0, 0, 0);
-              // Do Nothing, calling this function enables the camera stream
-            }
-            break;
-          case RIGHT:
-            // Logic for placing pixel on the right side                       
-            break;
-        }
-        if (aligned) {
-          placementTask = PlacementTasks.ALIGNED;
-    
-        } else {
-          return BasicPlacementTasks.ALIGNING;
-        }
-      case ALIGNED:
-        Drive(0, 0, 0);
-        placementClock.reset();
-        placementTask = PlacementTasks.RAISING;
-      case RAISING:
-        robot.leftRiser.setSpeed(0.5);
-        robot.rightRiser.setSpeed(0.5);
-        if (placementClock.milliseconds() > RAISE_DURATION) {
-          placementTask = PlacementTasks.RAISED;
-        }
-        return BasicPlacementTasks.RAISING;
-      case RAISED:
-        robot.leftRiser.setSpeed(0);
-        robot.rightRiser.setSpeed(0);
-        placementClock.reset();
-        placementTask = PlacementTasks.EXTENDING;
-      case EXTENDING:
-        robot.leftElbow.setPosition(1);
-        robot.rightElbow.setPosition(1);
-        if (placementClock.milliseconds() > EXTEND_DURATION) {
-          placementTask = PlacementTasks.EXTENDED;
-        }
-        return BasicPlacementTasks.EXTENDING;
-      case EXTENDED:
-        placementTask = PlacementTasks.REALIGNING;
-      case REALIGNING:
-        boolean realigned = false;
-        switch (position) {
-          case LEFT:
-            // Logic for placing pixel on the left side
-            break;
-          case CENTER:
-            // Logic for placing pixel on the center
-            try {
-              AprilTagDetection tag = camera.getAprilTag(Camera.AprilTagPositions.RIGHT);
-              //TODO: Refine algorithim
-              if ((tag.ftcPose.x < 1 && tag.ftcPose.x > -1)
-                  && (tag.ftcPose.range < 8 && tag.ftcPose.range > 6)
-                  && (tag.ftcPose.yaw < 1 && tag.ftcPose.yaw > -1)) {
-                realigned = true;
-              } else {
-                Drive(tag.ftcPose.x > 1 ? 0.1 : tag.ftcPose.x < -1 ? -0.1 : 0,
-                    tag.ftcPose.range > 8 ? 0.1
-                        : tag.ftcPose.range < 6 ? -0.1 : 0,
-                    tag.ftcPose.yaw > 1 ? -0.1
-                        : tag.ftcPose.yaw < -1 ? 0.1 : 0);
-              }
-            } catch (Camera.TagNotFound _e) {
-              try {
-                switch (camera.getAvalableAprilTags()) {
-                  case CENTER:
-                    //TODO
-                  case RIGHT:
-                    //TODO
-                }
-              } catch (Camera.NoTagsFound __e) {
-                telemetry.addLine("Error: " + __e.getMessage());
-                Drive(0, 0, 0);
-              } catch (Camera.CameraNotStreaming __e) {
-                Drive(0, 0, 0);
-                // Do Nothing, calling this function enables the camera stream
-              } catch (Exception __e) {
-                telemetry.addLine("Error: " + __e.getMessage());
-              }
-            } catch (Camera.NoTagsFound _e) {
-              Drive(0, 0, 0);
-            } catch (Camera.CameraNotStreaming _e) {
-              Drive(0, 0, 0);
-              // Do Nothing, calling this function enables the camera stream
-            }
-            break;
-          case RIGHT:
-            // Logic for placing pixel on the right side                       
-            break;
-        }
-        if (realigned) {
-          placementTask = PlacementTasks.REALIGNED;
-    
-        } else {
-          return BasicPlacementTasks.REALIGNING;
-        }
-      case REALIGNED:
-        Drive(0, 0, 0);
-        placementTask = PlacementTasks.DROPPING;
-      case DROPPING:
-        robot.trapdoor.setPosition(0);
-        robot.intake.setSpeed(0.3);
-        return BasicPlacementTasks.DROPPING;
+  public void reset() {
+    Drive(0, 0, 0);
+    robot.lift.lower();
+    robot.intake.setSpeed(0);
+    robot.trapdoor.setPosition(0);
+    try {
+      camera.pause();
+    } catch (Camera.CameraNotAttachedException e) {
+      //Do Nothing
     }
-    throw new IllegalStateException("Pixel placing switch-case never returned!");
-    }*/
+  }
+
+  public void placePixel(Camera.AprilTagPosition position) {
+    try {
+      camera.resume();
+      robot.lift.raise();
+      try {
+        List<Camera.AprilTag> tags = camera.getAprilTags();
+        Camera.AprilTag tag = null;
+        for (Camera.AprilTag _tag : tags) {
+          if (_tag.position == position) {
+            tag = _tag;
+          }
+        }
+        if (tag != null) {
+          /* Old algorithm:
+          Drive(currentDetection.ftcPose.x > 1 ? 0.1 : currentDetection.ftcPose.x < -1 ? -0.1 : 0,
+                            currentDetection.ftcPose.range > 20 ? 0.1 : currentDetection.ftcPose.range < 18 ? -0.1 : 0,
+                            currentDetection.ftcPose.yaw > 1 ? -0.1
+                                    : currentDetection.ftcPose.yaw < -1 ? 0.1 : 0);
+          */
+          Drive((tag.ftcPose.x / 3) * 0.1, ((tag.ftcPose.y - 20) / 3) * 0.1, (tag.ftcPose.yaw / 3) * 0.1);
+        }
+      } catch (Camera.CameraNotStreamingException e) {
+        //Do nothing, the camera should be starting
+      } catch (Camera.NoTagsFoundException e) {
+        //TODO: Throw some sort of error?
+      }
+    } catch (Camera.CameraNotAttachedException e) {
+      //Function can't run
+      //TODO: notify user
+    }
+  }
 
   PixelPosition lastPosition = PixelPosition.NONE;
-  BasicPlacementTasks lastTask = BasicPlacementTasks.NONE;
 
   /*
   * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
@@ -484,13 +309,28 @@ public class CameraTeleop extends OpMode {
         Math.round(robot.rightElbow.getPosition() * 100));
     PixelPosition position = getPosition();
     if (position == PixelPosition.NONE) {
-      if (lastPosition != PixelPosition.NONE || lastTask != BasicPlacementTasks.NONE) {
-        lastTask = reset(lastTask);
+      if (lastPosition != PixelPosition.NONE) {
+        reset();
       } else {
         driverLoop();
         operatorLoop();
       }
     } else {
+      switch (position) {
+        case LEFT:
+          placePixel(Camera.AprilTagPosition.LEFT);
+          break;
+        case CENTER:
+          placePixel(Camera.AprilTagPosition.CENTER);
+          break;
+        case RIGHT:
+          placePixel(Camera.AprilTagPosition.RIGHT);
+          break;
+        case NONE:
+          //Will never happen due to if/else loop
+          //This statement is included for intellisense warnings
+          break;
+      }
       //lastTask = placePixel(position);
     }
     lastPosition = position;
