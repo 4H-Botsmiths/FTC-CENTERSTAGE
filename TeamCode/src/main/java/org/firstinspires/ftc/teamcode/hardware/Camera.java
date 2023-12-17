@@ -25,12 +25,14 @@ import java.util.stream.Collectors;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list.
  */
 public class Camera {
+  private Telemetry telemetry;
 
   /*
    * Variables used for switching cameras.
    */
-  public Camera(HardwareMap hardwareMap) {
+  public Camera(HardwareMap hardwareMap, Telemetry telemetry) {
     this.webcam = hardwareMap.get(WebcamName.class, "Webcam 1");
+    this.telemetry = telemetry;
   }
 
   private WebcamName webcam;
@@ -93,6 +95,8 @@ public class Camera {
       visionPortal.stopStreaming();
     } catch (Exception e) {
       //This function has called errors before
+      telemetry.speak("Error pausing camera");
+
     }
   }
 
@@ -106,7 +110,7 @@ public class Camera {
   /**
    * Add telemetry about AprilTag detections.
    */
-  public void telemetryAprilTag(Telemetry telemetry) {
+  public void telemetryAprilTag() {
     try {
       List<AprilTag> currentDetections = getAprilTags();
       telemetry.addData("# AprilTags Detected", currentDetections.size());

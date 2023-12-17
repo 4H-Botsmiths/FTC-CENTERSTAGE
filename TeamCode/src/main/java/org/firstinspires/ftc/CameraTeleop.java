@@ -58,7 +58,7 @@ public class CameraTeleop extends OpMode {
     // to 'get' must correspond to the names assigned during the robot configuration
     // step (using the FTC Robot Controller app on the phone).
     robot = new Robot(hardwareMap);
-    camera = new Camera(hardwareMap);
+    camera = new Camera(hardwareMap, telemetry);
     try {
       camera.initAprilTag();
     } catch (Camera.CameraNotAttachedException e) {
@@ -84,7 +84,7 @@ public class CameraTeleop extends OpMode {
    */
   @Override
   public void init_loop() {
-    camera.telemetryAprilTag(telemetry);
+    camera.telemetryAprilTag();
   }
 
   /*
@@ -371,7 +371,7 @@ public class CameraTeleop extends OpMode {
       //lastTask = placePixel(position);
     }
     lastPosition = position;
-    camera.telemetryAprilTag(telemetry);
+    camera.telemetryAprilTag();
   }
 
   /*
