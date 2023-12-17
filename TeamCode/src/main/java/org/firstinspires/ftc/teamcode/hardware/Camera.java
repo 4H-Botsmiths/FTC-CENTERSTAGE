@@ -103,16 +103,12 @@ public class Camera {
    * Add telemetry about AprilTag detections.
    */
   public void telemetryAprilTag(Telemetry telemetry) {
-    if (!webcam.isAttached()) {
-      telemetry.addLine("Camera is not attached");
-    } else if (visionPortal.getCameraState() != CameraState.STREAMING) {
-      telemetry.addLine("Camera is not streaming");
-    } else {
-      List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+    try {
+      List<AprilTag> currentDetections = getAprilTags();
       telemetry.addData("# AprilTags Detected", currentDetections.size());
 
       // Step through the list of detections and display info for each one.
-      for (AprilTagDetection detection : currentDetections) {
+      for (AprilTag detection : currentDetections) {
         if (detection.metadata != null) {
           telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
           telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y,
@@ -132,6 +128,12 @@ public class Camera {
       telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
       telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
       telemetry.addLine("RBE = Range, Bearing & Elevation");
+    } catch (CameraNotAttachedException e) {
+      telemetry.addLine("Camera is not attached");
+    } catch (CameraNotStreamingException e) {
+      telemetry.addLine("Camera is not streaming");
+    } catch (NoTagsFoundException e) {
+      telemetry.addLine("No AprilTags Detected");
     }
   } // end method telemetryAprilTag()
 
