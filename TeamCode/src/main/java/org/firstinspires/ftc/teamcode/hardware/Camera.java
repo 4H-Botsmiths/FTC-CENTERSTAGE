@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import java.util.concurrent.CompletableFuture;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.CameraName;
@@ -91,12 +92,25 @@ public class Camera {
     if (!webcam.isAttached()) {
       throw new CameraNotAttachedException();
     }
-    try {
-      visionPortal.stopStreaming();
-    } catch (Exception e) {
-      //This function has called errors before
-      telemetry.speak("Error pausing camera");
-
+    if (this.visionPortal.getCameraState() == CameraState.OPENING_CAMERA_DEVICE) {
+      //You can't stop a camera stream before the device is opened
+      CompletableFuture.runAsync(() -> {
+        while (this.visionPortal.getCameraState() == CameraState.OPENING_CAMERA_DEVICE) {
+          try {
+            Thread.sleep(100);
+          } catch (InterruptedException e) {
+            //Do nothing
+          }
+        }
+        visionPortal.stopStreaming();
+      });
+    } else {
+      try {
+        visionPortal.stopStreaming();
+      } catch (Exception e) {
+        //This function has called errors before
+        telemetry.speak("Error pausing camera");
+      }
     }
   }
 
@@ -140,6 +154,7 @@ public class Camera {
       telemetry.addLine("Camera is not attached");
     } catch (CameraNotStreamingException e) {
       telemetry.addLine("Camera is not streaming");
+      telemetry.addLine(visionPortal.getCameraState().toString());
     } catch (NoTagsFoundException e) {
       telemetry.addLine("No AprilTags Detected");
     }
