@@ -277,13 +277,14 @@ public class CameraTeleop extends OpMode {
                             currentDetection.ftcPose.yaw > 1 ? -0.1
                                     : currentDetection.ftcPose.yaw < -1 ? 0.1 : 0);
           */
-          Drive((tag.ftcPose.x / 2) * sensitivity, ((tag.ftcPose.y - 20) / 2) * sensitivity,
-              (tag.ftcPose.yaw / 2) * -sensitivity);
+          Drive(Range.clip((tag.ftcPose.x / 2) * sensitivity, -0.1, 0.1),
+              Range.clip(((tag.ftcPose.y - 20) / 2) * sensitivity, -0.1, 0.1),
+              Range.clip((tag.ftcPose.yaw / 2) * -sensitivity, -0.1, 0.1));
         }
       } catch (Camera.CameraNotStreamingException e) {
         //Do nothing, the camera should be starting
       } catch (Camera.NoTagsFoundException e) {
-        //TODO: Throw some sort of error?
+        Drive(0, 0, 0);
       }
     } catch (Camera.CameraNotAttachedException e) {
       //Function can't run
