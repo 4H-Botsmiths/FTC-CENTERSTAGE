@@ -256,7 +256,7 @@ public class CameraTeleop extends OpMode {
     }
   }
 
-  public final double sensitivity = 0.5;
+  public final double sensitivity = 0.25;
 
   public void placePixel(Camera.AprilTagPosition position) {
     try {
