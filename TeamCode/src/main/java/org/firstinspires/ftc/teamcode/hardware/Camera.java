@@ -232,11 +232,11 @@ public class Camera {
     }
   }
 
-  public class AprilTag extends AprilTagDetection {
-    public enum AprilTagPosition {
-      LEFT, CENTER, RIGHT, UNKNOWN
-    }
+  public enum AprilTagPosition {
+    LEFT, CENTER, RIGHT, UNKNOWN
+  }
 
+  public class AprilTag extends AprilTagDetection {
     public AprilTagPosition position = AprilTagPosition.UNKNOWN;
 
     public AprilTag(AprilTagDetection detection) {
