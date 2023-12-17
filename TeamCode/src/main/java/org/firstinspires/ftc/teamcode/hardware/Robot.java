@@ -4,12 +4,17 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.FutureTask;
+
 import org.firstinspires.ftc.teamcode.classes.DCMotor;
 
 public class Robot {
+  public VoltageSensor voltage = null;
+
   /** Port 2.0 ? */
   public DCMotor frontLeft = null;
   /** Port 1 */
@@ -35,6 +40,8 @@ public class Robot {
   public Lift lift = null;
 
   public Robot(HardwareMap hardwareMap) {
+    voltage = hardwareMap.get(VoltageSensor.class, "Control Hub");
+
     frontLeft = new DCMotor(hardwareMap.get(DcMotorEx.class, "FrontLeft"));
     frontRight = new DCMotor(hardwareMap.get(DcMotorEx.class, "FrontRight"), DcMotor.Direction.REVERSE);
     rearLeft = new DCMotor(hardwareMap.get(DcMotorEx.class, "RearLeft"));
@@ -52,7 +59,25 @@ public class Robot {
     rightElbow.scaleRange(0.03, 0.4);
 
     lift = new Lift(leftRiser, rightRiser);
+
+    CompletableFuture.runAsync(() -> {
+      while (true) {
+        double currentVoltage = voltage.getVoltage();
+        averageVoltage = (currentVoltage + averageVoltage) / 2;
+        performance = (currentVoltage / averageVoltage);
+        averagePerformance = (performance + averagePerformance) / 2;
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          //Do Nothing
+        }
+      }
+    });
   }
+
+  public double averageVoltage = 12;
+  public double averagePerformance = 100;
+  public double performance = 100;
 
   public enum LiftStatus {
     RAISED, RAISING, LOWERED, LOWERING
