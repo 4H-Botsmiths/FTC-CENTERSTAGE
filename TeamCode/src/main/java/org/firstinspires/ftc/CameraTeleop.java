@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import java.util.Comparator;
 import java.util.List;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.classes.DCMotor;
@@ -92,6 +93,11 @@ public class CameraTeleop extends OpMode {
   @Override
   public void start() {
     //camera.visionPortal.stopLiveView();
+    try {
+      camera.pause();
+    } catch (Camera.CameraNotAttachedException e) {
+      //Do Nothing
+    }
     runtime.reset();
   }
 
@@ -266,6 +272,7 @@ public class CameraTeleop extends OpMode {
       robot.lift.raise();
       try {
         List<Camera.AprilTag> tags = camera.getAprilTags();
+
         Camera.AprilTag tag = null;
         for (Camera.AprilTag _tag : tags) {
           if (_tag.position == position) {
@@ -283,8 +290,32 @@ public class CameraTeleop extends OpMode {
               Range.clip((tag.ftcPose.y - 20) * sensitivity, -speedLimit, speedLimit),
               Range.clip(tag.ftcPose.yaw * -sensitivity, -speedLimit, speedLimit));
         } else {
-          Drive(0, 0, 0);
-          //TODO:
+          if (tags.size() == 2) {
+            Drive(Range.clip((tags.get(1).ftcPose.x + tags.get(0).ftcPose.x) * sensitivity, -speedLimit, speedLimit),
+                Range.clip(((tags.get(0).ftcPose.y + tags.get(1).ftcPose.y) / 2 - 20) * sensitivity, -speedLimit,
+                    speedLimit),
+                Range.clip(((tags.get(0).ftcPose.yaw + tags.get(1).ftcPose.yaw) / 2) * -sensitivity, -speedLimit,
+                    speedLimit));
+          } else {
+            tag = tags.get(0);
+            switch (position) {
+              case LEFT:
+                Drive(tag.position == Camera.AprilTagPosition.CENTER ? -0.2 : -0.3,
+                    Range.clip((tag.ftcPose.y - 20) * sensitivity, -speedLimit, speedLimit),
+                    Range.clip(tag.ftcPose.yaw * -sensitivity, -speedLimit, speedLimit));
+                break;
+              case RIGHT:
+                Drive(tag.position == Camera.AprilTagPosition.CENTER ? 0.2 : 0.3,
+                    Range.clip((tag.ftcPose.y - 20) * sensitivity, -speedLimit, speedLimit),
+                    Range.clip(tag.ftcPose.yaw * -sensitivity, -speedLimit, speedLimit));
+                break;
+              case CENTER:
+                Drive(tag.position == Camera.AprilTagPosition.LEFT ? 0.2 : -0.2,
+                    Range.clip((tag.ftcPose.y - 20) * sensitivity, -speedLimit, speedLimit),
+                    Range.clip(tag.ftcPose.yaw * -sensitivity, -speedLimit, speedLimit));
+                break;
+            }
+          }
         }
       } catch (Camera.CameraNotStreamingException e) {
         //Do nothing, the camera should be starting
