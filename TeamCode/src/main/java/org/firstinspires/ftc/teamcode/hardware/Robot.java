@@ -44,6 +44,7 @@ public class Robot {
     leftRiser = new DCMotor(hardwareMap.get(DcMotorEx.class, "LeftRiser"));
     rightRiser = new DCMotor(hardwareMap.get(DcMotorEx.class, "RightRiser"), DcMotor.Direction.REVERSE);
     trapdoor = hardwareMap.get(Servo.class, "Trapdoor");
+    trapdoor.setDirection(Servo.Direction.REVERSE);
     leftElbow = hardwareMap.get(Servo.class, "LeftElbow");
     rightElbow = hardwareMap.get(Servo.class, "RightElbow");
     leftElbow.setDirection(Servo.Direction.REVERSE);
