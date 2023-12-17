@@ -11,6 +11,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.VisionPortal.CameraState;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
@@ -179,7 +180,11 @@ public class Camera {
     public AprilTag(AprilTagDetection detection) {
       //AprilTagDetection​(int id, int hamming, float decisionMargin, org.opencv.core.Point center, org.opencv.core.Point[] corners, AprilTagMetadata metadata, AprilTagPoseFtc ftcPose, AprilTagPoseRaw rawPose, long frameAcquisitionNanoTime)
       super(detection.id, detection.hamming, detection.decisionMargin, detection.center, detection.corners,
-          detection.metadata, detection.ftcPose, detection.rawPose, detection.frameAcquisitionNanoTime);
+          detection.metadata,
+          new AprilTagPoseFtc(detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z, detection.ftcPose.yaw + 8,
+              detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.range, detection.ftcPose.bearing,
+              detection.ftcPose.elevation),
+          detection.rawPose, detection.frameAcquisitionNanoTime);
       if (detection.id == 1 || detection.id == 4) {
         position = AprilTagPosition.LEFT;
       }
