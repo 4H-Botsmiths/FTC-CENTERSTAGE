@@ -81,6 +81,10 @@ public class ConceptAprilTagAligner extends LinearOpMode {
      */
     private VisionPortal visionPortal;
     private Robot robot = null;
+    /** How severe the corrections should be */
+    final double sensitivity = 0.1;
+    int id = 2;
+    boolean wasDpadClicked = false;
 
     @Override
     public void runOpMode() {
@@ -98,20 +102,64 @@ public class ConceptAprilTagAligner extends LinearOpMode {
         }
         if (opModeIsActive()) {
             while (opModeIsActive()) {
+                if ((gamepad1.dpad_right || gamepad1.dpad_left) && !wasDpadClicked) {
+                    wasDpadClicked = true;
+                    if (gamepad1.dpad_right) {
+                        id++;
+                    } else {
+                        id--;
+                    }
+                } else if (!(gamepad1.dpad_right || gamepad1.dpad_left)) {
+                    wasDpadClicked = false;
+                }
+                id = id > 3 ? 3 : id < 1 ? 1 : id;
+                telemetry.addData("Target:", id);
                 List<AprilTagDetection> currentDetections = aprilTag.getDetections();
                 AprilTagDetection currentDetection = null;
                 for (AprilTagDetection detection : currentDetections) {
-                    if (detection.id == 2) {
+                    if (detection.id == id) {
                         currentDetection = detection;
                     }
                 }
                 if (currentDetection != null) {
                     // ! X, range, yaw
-                    Drive(currentDetection.ftcPose.x > 1 ? 0.1 : currentDetection.ftcPose.x < 0 ? -0.1 : 0,
-                            currentDetection.ftcPose.range > 12 ? 0.1 : currentDetection.ftcPose.range < 10 ? -0.1 : 0,
-                            currentDetection.ftcPose.yaw > 3 ? -0.1
-                                    : currentDetection.ftcPose.yaw < -3 ? 0.1 : 0);
 
+                    Drive(currentDetection.ftcPose.x > 1 ? 0.1 : currentDetection.ftcPose.x < -1 ? -0.1 : 0,
+                            currentDetection.ftcPose.range > 20 ? 0.1 : currentDetection.ftcPose.range < 18 ? -0.1 : 0,
+                            currentDetection.ftcPose.yaw > 1 ? -0.1
+                                    : currentDetection.ftcPose.yaw < -1 ? 0.1 : 0);
+
+                    /*Drive(Range.clip(currentDetection.ftcPose.x * sensitivity, -0.1, 0.1),
+                            Range.clip((currentDetection.ftcPose.range - 12) * sensitivity, -0.1, 0.1),
+                            Range.clip(currentDetection.ftcPose.yaw * -sensitivity, -0.1, 0.1));*/
+                } else if (currentDetections.size() > 0) {
+                    for (AprilTagDetection detection : currentDetections) {
+                        if (detection.id == 1) {
+                            Drive(0.2,
+                                    detection.ftcPose.range > 20 ? 0.1
+                                            : detection.ftcPose.range < 18 ? -0.1 : 0,
+                                    detection.ftcPose.yaw > 1 ? -0.1
+                                            : detection.ftcPose.yaw < -1 ? 0.1 : 0);
+                            /*Drive(0.15,
+                                    Range.clip((currentDetection.ftcPose.range - 12) * sensitivity, -0.1, 0.1),
+                                    Range.clip(currentDetection.ftcPose.yaw * -sensitivity, -0.1, 0.1));*/
+                        } else if (detection.id == 2) {
+                            Drive(id > 2 ? 0.2 : -0.2,
+                                    detection.ftcPose.range > 20 ? 0.1
+                                            : detection.ftcPose.range < 18 ? -0.1 : 0,
+                                    detection.ftcPose.yaw > 1 ? -0.1
+                                            : detection.ftcPose.yaw < -1 ? 0.1 : 0);
+                        } else if (detection.id == 3) {
+                            Drive(-0.2,
+                                    detection.ftcPose.range > 20 ? 0.1
+                                            : detection.ftcPose.range < 18 ? -0.1 : 0,
+                                    detection.ftcPose.yaw > 1 ? -0.1
+                                            : detection.ftcPose.yaw < -1 ? 0.1 : 0);
+                            /*Drive(-0.15,
+                                    Range.clip((currentDetection.ftcPose.range - 12) * sensitivity, -0.1, 0.1),
+                                    Range.clip(currentDetection.ftcPose.yaw * -sensitivity, -0.1, 0.1));*/
+                        }
+                    }
                 } else {
                     Drive(0, 0, 0);
                 }
@@ -160,7 +208,6 @@ public class ConceptAprilTagAligner extends LinearOpMode {
                 // to load a predefined calibration for your camera.
                 // .setLensIntrinsics(578.272, 578.272, 402.145, 221.506)
                 // ... these parameters are fx, fy, cx, cy.
-
                 .build();
 
         // Adjust Image Decimation to trade-off detection-range for detection-rate.
@@ -209,13 +256,6 @@ public class ConceptAprilTagAligner extends LinearOpMode {
 
     } // end method initAprilTag()
 
-    public Offset offset = Offset.GOOD;
-
-    public enum Offset {
-        LEFT, RIGHT, GOOD
-    }
-
-    // ! Use X, Y and bearing to determine alignment
     /**
      * Add telemetry about AprilTag detections.
      */
@@ -226,18 +266,6 @@ public class ConceptAprilTagAligner extends LinearOpMode {
 
         // Step through the list of detections and display info for each one.
         for (AprilTagDetection detection : currentDetections) {
-            if (detection.id == 3) {
-                if (detection.ftcPose.x < 1 && offset != Offset.LEFT) {
-                    telemetry.speak("Left");
-                    offset = Offset.LEFT;
-                } else if (detection.ftcPose.x > 1 && offset != Offset.RIGHT) {
-                    telemetry.speak("Right");
-                    offset = Offset.RIGHT;
-                } else if (detection.ftcPose.x > -1 && detection.ftcPose.x < 1 && offset != Offset.GOOD) {
-                    telemetry.speak("Good");
-                    offset = Offset.GOOD;
-                }
-            }
             if (detection.metadata != null) {
                 telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
                 telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x,

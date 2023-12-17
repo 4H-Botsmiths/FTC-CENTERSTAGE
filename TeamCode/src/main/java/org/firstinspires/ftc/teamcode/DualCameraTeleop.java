@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 /**
  * This file contains an example of an iterative (Non-Linear) "OpMode".
@@ -36,7 +37,7 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
  */
 
 @TeleOp(name = "Dual Camera Teleop", group = "B")
-@Disabled
+// @Disabled
 public class DualCameraTeleop extends OpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -84,17 +85,13 @@ public class DualCameraTeleop extends OpMode {
      */
     @Override
     public void start() {
+        //camera.visionPortal.stopLiveView();
         runtime.reset();
     }
 
     public boolean placingPixel = false;
 
     public void driverLoop() {
-        telemetry.addData("Front Left", Math.round(robot.frontLeft.getSpeed() * 100));
-        telemetry.addData("Front Right", Math.round(robot.frontRight.getSpeed() * 100));
-        telemetry.addData("Rear Right", Math.round(robot.rearRight.getSpeed() * 100));
-        telemetry.addData("Rear Left", Math.round(robot.rearLeft.getSpeed() * 100));
-
         if (!placingPixel) {
             double x = 0.625 * gamepad1.left_stick_x + 0.375 * gamepad1.left_stick_x * gamepad1.right_trigger
                     - 0.375 * gamepad1.left_stick_x * gamepad1.left_trigger;
@@ -111,12 +108,6 @@ public class DualCameraTeleop extends OpMode {
     double elbowPosition = 0;
 
     public void operatorLoop() {
-        telemetry.addData("Intake", Math.round(robot.rearLeft.getSpeed() * 100));
-        telemetry.addData("Trapdoor", Math.round(robot.trapdoor.getPosition() * 100));
-        telemetry.addData("Lift", "Left: %d; Right: %d", Math.round(robot.leftRiser.getSpeed() * 100),
-                Math.round(robot.rightRiser.getSpeed() * 100));
-        telemetry.addData("Elbow", "Left: %d; Right: %d", Math.round(robot.leftElbow.getPosition() * 100),
-                Math.round(robot.rightElbow.getPosition() * 100));
 
         if (!placingPixel) {
             /*
@@ -127,7 +118,7 @@ public class DualCameraTeleop extends OpMode {
              * > Lift - left joystick DONE
              * > Elbow - right joystick
              */
-            if (gamepad2.a) {
+            if (gamepad2.y) {
                 robot.trapdoor.setPosition(0);
                 robot.intake.setSpeed(0.2);
             } else {
@@ -139,8 +130,8 @@ public class DualCameraTeleop extends OpMode {
                     robot.intake.setSpeed(gamepad2.left_trigger);
                 }
             }
-            robot.leftRiser.setSpeed(gamepad2.left_stick_y * 0.5);
-            robot.rightRiser.setSpeed(gamepad2.left_stick_y * 0.5);
+            robot.leftRiser.setSpeed(gamepad2.left_stick_y * -0.5);
+            robot.rightRiser.setSpeed(gamepad2.left_stick_y * -0.5);
 
             /** 0 = down; 1 = up */
             robot.leftElbow.setPosition(elbowPosition);
@@ -189,180 +180,278 @@ public class DualCameraTeleop extends OpMode {
     }
 
     enum PlacementTasks {
-        NONE, ALIGNING, ALIGNED, RAISING, EXTENDING, REALIGNING, REALIGNED, DROPPING, RESETTING
+        NONE, ALIGNING, ALIGNED, RAISING, RAISED, EXTENDING, EXTENDED, REALIGNING, REALIGNED, DROPPING, RESETTING
     }
 
-    public PixelPosition pixelPosition = PixelPosition.NONE;
-    public PlacementTasks placementTask = PlacementTasks.NONE;
-    public PlacementTasks resetTask = PlacementTasks.NONE;
-    public ElapsedTime placementClock = new ElapsedTime();
-
-    public final int RAISE_DURATION = 1000;
+    public final int RAISE_DURATION = 4000;
     public final int EXTEND_DURATION = 1000;
 
-    public boolean placePixel() {
-        if (placementTask == PlacementTasks.RESETTING) {
-            if (resetTask == PlacementTasks.DROPPING) {
-                robot.trapdoor.setPosition(0);
+    enum BasicPlacementTasks {
+        NONE, ALIGNING, RAISING, EXTENDING, REALIGNING, DROPPING
+    }
+
+    BasicPlacementTasks lastResetTask = BasicPlacementTasks.NONE;
+    ElapsedTime resetClock = new ElapsedTime();
+
+    @SuppressWarnings("fallthrough")
+    private BasicPlacementTasks reset(BasicPlacementTasks resetTask) {
+        switch (resetTask) {
+            case DROPPING:
+                placementTask = PlacementTasks.DROPPING;
+                robot.trapdoor.setPosition(1);
                 robot.intake.setSpeed(0);
-                resetTask = PlacementTasks.EXTENDING;
-                placementClock.reset();
-            } else if (resetTask == PlacementTasks.REALIGNING || resetTask == PlacementTasks.REALIGNED) {
-                camera.setCamera(Camera.ActiveCamera.NONE);
+            case REALIGNING:
+                placementTask = PlacementTasks.REALIGNING;
                 Drive(0, 0, 0);
-                resetTask = PlacementTasks.EXTENDING;
-                placementClock.reset();
-            } else if (resetTask == PlacementTasks.EXTENDING) {
-                if (placementClock.milliseconds() > EXTEND_DURATION) {
-                    resetTask = PlacementTasks.RAISING;
-                    placementClock.reset();
-                } else {
-                    robot.leftElbow.setPosition(0);
-                    robot.rightElbow.setPosition(0);
+                resetClock.reset();
+                lastResetTask = BasicPlacementTasks.REALIGNING;
+            case EXTENDING:
+                placementTask = PlacementTasks.EXTENDING;
+                if (lastResetTask != BasicPlacementTasks.EXTENDING) {
+                    resetClock.reset();
                 }
-            } else if (resetTask == PlacementTasks.RAISING) {
-                if (placementClock.milliseconds() > RAISE_DURATION) {
-                    resetTask = PlacementTasks.NONE;
-                    placementClock.reset();
+                lastResetTask = BasicPlacementTasks.EXTENDING;
+                robot.leftElbow.setPosition(0);
+                robot.rightElbow.setPosition(0);
+                if (resetClock.milliseconds() < EXTEND_DURATION) {
+                    return BasicPlacementTasks.EXTENDING;
+                }
+            case RAISING:
+                placementTask = PlacementTasks.RAISING;
+                if (lastResetTask != BasicPlacementTasks.RAISING) {
+                    resetClock.reset();
+                }
+                lastResetTask = BasicPlacementTasks.RAISING;
+                robot.leftRiser.setSpeed(-0.5);
+                robot.rightRiser.setSpeed(-0.5);
+                if (resetClock.milliseconds() > RAISE_DURATION) {
                     robot.leftRiser.setSpeed(0);
                     robot.rightRiser.setSpeed(0);
                 } else {
-                    robot.leftRiser.setSpeed(-0.5);
-                    robot.rightRiser.setSpeed(-0.5);
+                    return BasicPlacementTasks.RAISING;
                 }
-            } else if (resetTask == PlacementTasks.ALIGNING || resetTask == PlacementTasks.ALIGNED) {
-                camera.setCamera(Camera.ActiveCamera.NONE);
+            case ALIGNING:
+                placementTask = PlacementTasks.ALIGNING;
                 Drive(0, 0, 0);
-                resetTask = PlacementTasks.NONE;
-                placementClock.reset();
-            } else if (resetTask == PlacementTasks.NONE) {
+            case NONE:
                 placementTask = PlacementTasks.NONE;
-            }
-            return false;
-        } else {
-            PixelPosition driverChoice = PixelPosition.NONE;
-            if (gamepad1.x) {
-                driverChoice = PixelPosition.LEFT;
-            } else if (gamepad1.a) {
-                driverChoice = PixelPosition.CENTER;
-            } else if (gamepad1.b) {
-                driverChoice = PixelPosition.RIGHT;
-            }
-            PixelPosition operatorChoice = PixelPosition.NONE;
-            if (gamepad1.x) {
-                operatorChoice = PixelPosition.LEFT;
-            } else if (gamepad1.a) {
-                operatorChoice = PixelPosition.CENTER;
-            } else if (gamepad1.b) {
-                operatorChoice = PixelPosition.RIGHT;
-            }
-            if (driverChoice == operatorChoice) {
-                if (driverChoice == PixelPosition.NONE) {
-                    if (pixelPosition != PixelPosition.NONE) {
-                        resetTask = placementTask;
-                        placementTask = PlacementTasks.RESETTING;
-                        placementClock.reset();
-                    }
-                    gamepad1.stopRumble();
-                    gamepad2.stopRumble();
-                    // placementTask = PlacementTasks.NONE;
-                    return false;
-                } else {
-                    pixelPosition = driverChoice;
-                    if (placementTask == PlacementTasks.NONE || placementTask == PlacementTasks.ALIGNING) {
-                        placementTask = PlacementTasks.ALIGNING;
-                        switch (pixelPosition) {
-                            case LEFT:
-                                // Logic for placing pixel on the left side
-                                break;
-                            case CENTER:
-                                // Logic for placing pixel on the center
-                                break;
-                            case RIGHT:
-                                // Logic for placing pixel on the right side
-                                break;
-                        }
-                    } else {
-                        camera.setCamera(Camera.ActiveCamera.NONE);
-                        if (placementTask == PlacementTasks.ALIGNED || (placementTask == PlacementTasks.RAISING
-                                && placementClock.milliseconds() < RAISE_DURATION)) {
-                            if (placementTask == PlacementTasks.ALIGNING) {
-                                placementTask = PlacementTasks.RAISING;
-                                placementClock.reset();
-                                robot.leftRiser.setSpeed(0.5);
-                                robot.rightRiser.setSpeed(0.5);
-                            }
-                        } else {
-                            if (placementTask == PlacementTasks.RAISING || (placementTask == PlacementTasks.EXTENDING
-                                    && placementClock.milliseconds() < EXTEND_DURATION)) {
-                                if (placementTask == PlacementTasks.RAISING) {
-                                    placementTask = PlacementTasks.EXTENDING;
-                                    placementClock.reset();
-                                    robot.leftElbow.setPosition(1);
-                                    robot.rightElbow.setPosition(1);
-                                }
-                            } else {
-                                if (placementTask == PlacementTasks.EXTENDING
-                                        || placementTask == PlacementTasks.REALIGNING) {
-                                    placementTask = PlacementTasks.REALIGNING;
-                                    switch (pixelPosition) {
-                                        case LEFT:
-                                            // Logic for placing pixel on the left side
-                                            break;
-                                        case CENTER:
-                                            // Logic for placing pixel on the center
-                                            break;
-                                        case RIGHT:
-                                            // Logic for placing pixel on the right side
-                                            break;
-                                    }
-                                } else if (placementTask == PlacementTasks.REALIGNED) {
-                                    placementTask = PlacementTasks.DROPPING;
-                                    camera.setCamera(Camera.ActiveCamera.NONE);
-                                    robot.trapdoor.setPosition(1);
-                                    robot.intake.setSpeed(0.3);
-                                }
-                            }
+                return BasicPlacementTasks.NONE;
+        }
+        throw new IllegalStateException("Reset switch-case never returned!");
+    }
 
-                        }
-                    }
-                    return true;
-                }
-            } else {
-                pixelPosition = PixelPosition.NONE;
-                switch (driverChoice) {
-                    case NONE:
-                        gamepad2.stopRumble();
-                        break;
-                    case LEFT:
-                        gamepad2.rumble(1, 0, Gamepad.RUMBLE_DURATION_CONTINUOUS);
-                        break;
-                    case CENTER:
-                        gamepad2.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
-                        break;
-                    case RIGHT:
-                        gamepad2.rumble(0, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
-                        break;
-                }
-                switch (operatorChoice) {
-                    case NONE:
-                        gamepad1.stopRumble();
-                        break;
-                    case LEFT:
-                        gamepad1.rumble(1, 0, Gamepad.RUMBLE_DURATION_CONTINUOUS);
-                        break;
-                    case CENTER:
-                        gamepad1.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
-                        break;
-                    case RIGHT:
-                        gamepad1.rumble(0, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
-                        break;
-                }
-                placementTask = PlacementTasks.NONE;
-                return false;
+    public PixelPosition getPosition() {
+        PixelPosition driverChoice = PixelPosition.NONE;
+        if (gamepad1.x) {
+            driverChoice = PixelPosition.LEFT;
+        } else if (gamepad1.a) {
+            driverChoice = PixelPosition.CENTER;
+        } else if (gamepad1.b) {
+            driverChoice = PixelPosition.RIGHT;
+        }
+        PixelPosition operatorChoice = PixelPosition.NONE;
+        if (gamepad2.x) {
+            operatorChoice = PixelPosition.LEFT;
+        } else if (gamepad2.a) {
+            operatorChoice = PixelPosition.CENTER;
+        } else if (gamepad2.b) {
+            operatorChoice = PixelPosition.RIGHT;
+        }
+        if (driverChoice == operatorChoice) {
+            gamepad1.stopRumble();
+            gamepad2.stopRumble();
+            return driverChoice;
+        } else {
+            switch (driverChoice) {
+                case NONE:
+                    gamepad2.stopRumble();
+                    break;
+                case LEFT:
+                    gamepad2.rumble(1, 0, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+                    break;
+                case CENTER:
+                    gamepad2.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+                    break;
+                case RIGHT:
+                    gamepad2.rumble(0, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+                    break;
             }
+            switch (operatorChoice) {
+                case NONE:
+                    gamepad1.stopRumble();
+                    break;
+                case LEFT:
+                    gamepad1.rumble(1, 0, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+                    break;
+                case CENTER:
+                    gamepad1.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+                    break;
+                case RIGHT:
+                    gamepad1.rumble(0, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+                    break;
+            }
+            return PixelPosition.NONE;
         }
     }
+
+    public PlacementTasks placementTask = PlacementTasks.NONE;
+    public ElapsedTime placementClock = new ElapsedTime();
+
+    @SuppressWarnings("fallthrough")
+    public BasicPlacementTasks placePixel(PixelPosition position) {
+        switch (placementTask) {
+            case NONE:
+                placementTask = PlacementTasks.ALIGNING;
+            case ALIGNING:
+                boolean aligned = false;
+                switch (position) {
+                    case LEFT:
+                        // Logic for placing pixel on the left side
+                        break;
+                    case CENTER:
+                        // Logic for placing pixel on the center
+                        try {
+                            AprilTagDetection tag = camera.getAprilTag(Camera.AprilTagPositions.RIGHT);
+                            //TODO: Refine algorithim
+                            if ((tag.ftcPose.x < 1 && tag.ftcPose.x > -1)
+                                    && (tag.ftcPose.range < 12 && tag.ftcPose.range > 10)
+                                    && (tag.ftcPose.yaw < 1 && tag.ftcPose.yaw > -1)) {
+                                aligned = true;
+                            } else {
+                                Drive(tag.ftcPose.x > 1 ? 0.1 : tag.ftcPose.x < -1 ? -0.1 : 0,
+                                        tag.ftcPose.range > 12 ? 0.1
+                                                : tag.ftcPose.range < 10 ? -0.1 : 0,
+                                        tag.ftcPose.yaw > 1 ? -0.1
+                                                : tag.ftcPose.yaw < -1 ? 0.1 : 0);
+                            }
+                        } catch (Camera.TagNotFound _e) {
+                            try {
+                                switch (camera.getAvalableAprilTags()) {
+                                    case CENTER:
+                                        //TODO
+                                    case RIGHT:
+                                        //TODO
+                                }
+                            } catch (Camera.NoTagsFound __e) {
+                                telemetry.addLine("Error: " + __e.getMessage());
+                                Drive(0, 0, 0);
+                            } catch (Camera.CameraNotStreaming __e) {
+                                Drive(0, 0, 0);
+                                // Do Nothing, calling this function enables the camera stream
+                            } catch (Exception __e) {
+                                telemetry.addLine("Error: " + __e.getMessage());
+                            }
+                        } catch (Camera.NoTagsFound _e) {
+                            Drive(0, 0, 0);
+                        } catch (Camera.CameraNotStreaming _e) {
+                            Drive(0, 0, 0);
+                            // Do Nothing, calling this function enables the camera stream
+                        }
+                        break;
+                    case RIGHT:
+                        // Logic for placing pixel on the right side                       
+                        break;
+                }
+                if (aligned) {
+                    placementTask = PlacementTasks.ALIGNED;
+
+                } else {
+                    return BasicPlacementTasks.ALIGNING;
+                }
+            case ALIGNED:
+                Drive(0, 0, 0);
+                placementClock.reset();
+                placementTask = PlacementTasks.RAISING;
+            case RAISING:
+                robot.leftRiser.setSpeed(0.5);
+                robot.rightRiser.setSpeed(0.5);
+                if (placementClock.milliseconds() > RAISE_DURATION) {
+                    placementTask = PlacementTasks.RAISED;
+                }
+                return BasicPlacementTasks.RAISING;
+            case RAISED:
+                robot.leftRiser.setSpeed(0);
+                robot.rightRiser.setSpeed(0);
+                placementClock.reset();
+                placementTask = PlacementTasks.EXTENDING;
+            case EXTENDING:
+                robot.leftElbow.setPosition(1);
+                robot.rightElbow.setPosition(1);
+                if (placementClock.milliseconds() > EXTEND_DURATION) {
+                    placementTask = PlacementTasks.EXTENDED;
+                }
+                return BasicPlacementTasks.EXTENDING;
+            case EXTENDED:
+                placementTask = PlacementTasks.REALIGNING;
+            case REALIGNING:
+                boolean realigned = false;
+                switch (position) {
+                    case LEFT:
+                        // Logic for placing pixel on the left side
+                        break;
+                    case CENTER:
+                        // Logic for placing pixel on the center
+                        try {
+                            AprilTagDetection tag = camera.getAprilTag(Camera.AprilTagPositions.RIGHT);
+                            //TODO: Refine algorithim
+                            if ((tag.ftcPose.x < 1 && tag.ftcPose.x > -1)
+                                    && (tag.ftcPose.range < 8 && tag.ftcPose.range > 6)
+                                    && (tag.ftcPose.yaw < 1 && tag.ftcPose.yaw > -1)) {
+                                realigned = true;
+                            } else {
+                                Drive(tag.ftcPose.x > 1 ? 0.1 : tag.ftcPose.x < -1 ? -0.1 : 0,
+                                        tag.ftcPose.range > 8 ? 0.1
+                                                : tag.ftcPose.range < 6 ? -0.1 : 0,
+                                        tag.ftcPose.yaw > 1 ? -0.1
+                                                : tag.ftcPose.yaw < -1 ? 0.1 : 0);
+                            }
+                        } catch (Camera.TagNotFound _e) {
+                            try {
+                                switch (camera.getAvalableAprilTags()) {
+                                    case CENTER:
+                                        //TODO
+                                    case RIGHT:
+                                        //TODO
+                                }
+                            } catch (Camera.NoTagsFound __e) {
+                                telemetry.addLine("Error: " + __e.getMessage());
+                                Drive(0, 0, 0);
+                            } catch (Camera.CameraNotStreaming __e) {
+                                Drive(0, 0, 0);
+                                // Do Nothing, calling this function enables the camera stream
+                            } catch (Exception __e) {
+                                telemetry.addLine("Error: " + __e.getMessage());
+                            }
+                        } catch (Camera.NoTagsFound _e) {
+                            Drive(0, 0, 0);
+                        } catch (Camera.CameraNotStreaming _e) {
+                            Drive(0, 0, 0);
+                            // Do Nothing, calling this function enables the camera stream
+                        }
+                        break;
+                    case RIGHT:
+                        // Logic for placing pixel on the right side                       
+                        break;
+                }
+                if (realigned) {
+                    placementTask = PlacementTasks.REALIGNED;
+
+                } else {
+                    return BasicPlacementTasks.REALIGNING;
+                }
+            case REALIGNED:
+                Drive(0, 0, 0);
+                placementTask = PlacementTasks.DROPPING;
+            case DROPPING:
+                robot.trapdoor.setPosition(0);
+                robot.intake.setSpeed(0.3);
+                return BasicPlacementTasks.DROPPING;
+        }
+        throw new IllegalStateException("Pixel placing switch-case never returned!");
+    }
+
+    PixelPosition lastPosition = PixelPosition.NONE;
+    BasicPlacementTasks lastTask = BasicPlacementTasks.NONE;
 
     /*
      * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
@@ -370,11 +459,30 @@ public class DualCameraTeleop extends OpMode {
     @Override
     public void loop() {
         telemetry.addData("Status", "Running");
+        telemetry.addData("Front Left", Math.round(robot.frontLeft.getSpeed() * 100));
+        telemetry.addData("Front Right", Math.round(robot.frontRight.getSpeed() * 100));
+        telemetry.addData("Rear Right", Math.round(robot.rearRight.getSpeed() * 100));
+        telemetry.addData("Rear Left", Math.round(robot.rearLeft.getSpeed() * 100));
 
-        if (!placePixel()) {
-            driverLoop();
-            operatorLoop();
+        telemetry.addData("Intake", Math.round(robot.rearLeft.getSpeed() * 100));
+        telemetry.addData("Trapdoor", Math.round(robot.trapdoor.getPosition() * 100));
+        telemetry.addData("Lift", "Left: %d; Right: %d", Math.round(robot.leftRiser.getSpeed() * 100),
+                Math.round(robot.rightRiser.getSpeed() * 100));
+        telemetry.addData("Elbow", "Left: %d; Right: %d", Math.round(robot.leftElbow.getPosition() * 100),
+                Math.round(robot.rightElbow.getPosition() * 100));
+        PixelPosition position = getPosition();
+        if (position == PixelPosition.NONE) {
+            if (lastPosition != PixelPosition.NONE || lastTask != BasicPlacementTasks.NONE) {
+                lastTask = reset(lastTask);
+            } else {
+                driverLoop();
+                operatorLoop();
+            }
+        } else {
+            lastTask = placePixel(position);
         }
+        lastPosition = position;
+        camera.telemetryAprilTag(telemetry);
     }
 
     /*

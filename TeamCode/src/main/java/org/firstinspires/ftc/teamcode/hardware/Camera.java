@@ -28,11 +28,10 @@ public class Camera {
    * Variables used for switching cameras.
    */
   public Camera(HardwareMap hardwareMap) {
-    this.webcam1 = hardwareMap.get(WebcamName.class, "Webcam 1");
-    this.webcam2 = hardwareMap.get(WebcamName.class, "Webcam 2");
+    this.webcam = hardwareMap.get(WebcamName.class, "Webcam 1");
   }
 
-  private WebcamName webcam1, webcam2;
+  private WebcamName webcam;
   /**
    * The variable to store our instance of the AprilTag processor.
    */
@@ -46,21 +45,101 @@ public class Camera {
   /**
    * Initialize the AprilTag processor.
    */
-  public void initAprilTag() {
+  public void initAprilTag() throws CameraNotConnectedException {
+    if (!webcam.isAttached()) {
+      throw new CameraNotConnectedException();
+    }
 
     // Create the AprilTag processor by using a builder.
     aprilTag = new AprilTagProcessor.Builder().build();
-
-    CameraName switchableCamera = ClassFactory.getInstance()
-        .getCameraManager().nameForSwitchableCamera(webcam1, webcam2);
-
     // Create the vision portal by using a builder.
     visionPortal = new VisionPortal.Builder()
-        .setCamera(switchableCamera)
+        .setCamera(this.webcam)
         .addProcessor(aprilTag)
         .build();
 
   } // end method initAprilTag()
+
+  public enum AprilTagPositions {
+    LEFT, CENTER, RIGHT
+  }
+
+  /**
+   * Get the AprilTag detection for the given tag.
+   *
+   * @param tag The AprilTags enum value representing the tag to detect.
+   * @return The AprilTagDetection object representing the detected tag.
+   * @throws CameraNotStreamingException If the camera is not streaming.
+   * @throws NoTagsFoundException        If no tags are found.
+   */
+  public AprilTagDetection getAprilTag(AprilTagPositions tag) throws CameraNotStreaming, NoTagsFound, TagNotFound {
+    visionPortal.resumeStreaming();
+    if (visionPortal.getCameraState() != CameraState.STREAMING) {
+      throw new CameraNotStreaming();
+    }
+    switch (tag) {
+      case RIGHT:
+        visionPortal.setActiveCamera(webcam);
+        break;
+      case CENTER:
+        visionPortal.setActiveCamera(webcam);
+        break;
+      case LEFT:
+        visionPortal.setActiveCamera(webcam2);
+        break;
+    }
+    List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+    // Step through the list of detections and display info for each one.
+    for (AprilTagDetection detection : currentDetections) {
+      switch (tag) {
+        case LEFT:
+          if (detection.id == 1 || detection.id == 4) {
+            return detection;
+          }
+          break;
+        case CENTER:
+          if (detection.id == 2 || detection.id == 5) {
+            return detection;
+          }
+          break;
+        case RIGHT:
+          if (detection.id == 3 || detection.id == 6) {
+            return detection;
+          }
+          break;
+      }
+    }
+    if (currentDetections.size() == 0) {
+      throw new NoTagsFound();
+    } else {
+      throw new TagNotFound();
+    }
+  }
+
+  public AprilTagPositions getAvalableAprilTags() throws CameraNotStreaming, NoTagsFound, Exception {
+    visionPortal.resumeStreaming();
+    if (visionPortal.getCameraState() != CameraState.STREAMING) {
+      throw new CameraNotStreaming();
+    }
+    List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+    // Step through the list of detections and display info for each one.
+    for (AprilTagDetection detection : currentDetections) {
+      if (detection.id == 1 || detection.id == 4) {
+        return AprilTagPositions.LEFT;
+      }
+      if (detection.id == 2 || detection.id == 5) {
+        return AprilTagPositions.CENTER;
+      }
+      if (detection.id == 3 || detection.id == 6) {
+        return AprilTagPositions.RIGHT;
+      }
+    }
+    if (currentDetections.size() == 0) {
+      throw new NoTagsFound();
+    } else {
+      throw new Exception("Some unexpected error happened while detecting available tag positions");
+    }
+  }
 
   /**
    * Add telemetry about AprilTag detections.
@@ -93,20 +172,61 @@ public class Camera {
 
   } // end method telemetryAprilTag()
 
-  public enum ActiveCamera {
-    LEFT, RIGHT, NONE
-  }
-
-  public void setCamera(ActiveCamera camera) {
-    if (camera == ActiveCamera.LEFT) {
-      visionPortal.resumeStreaming();
-      visionPortal.setActiveCamera(webcam1);
-    } else if (camera == ActiveCamera.RIGHT) {
-      visionPortal.resumeStreaming();
-      visionPortal.setActiveCamera(webcam2);
-    } else if (camera == ActiveCamera.NONE) {
-      visionPortal.stopStreaming();
+  /*
+   * public enum ActiveCamera {
+   * LEFT, RIGHT, NONE
+   * }
+   * 
+   * public void setCamera(ActiveCamera camera) {
+   * if (camera == ActiveCamera.LEFT) {
+   * visionPortal.resumeStreaming();
+   * visionPortal.setActiveCamera(webcam1);
+   * } else if (camera == ActiveCamera.RIGHT) {
+   * visionPortal.resumeStreaming();
+   * visionPortal.setActiveCamera(webcam2);
+   * } else if (camera == ActiveCamera.NONE) {
+   * visionPortal.stopStreaming();
+   * }
+   * }
+   */
+  public class NoTagsFound extends Exception {
+    public NoTagsFound() {
+      super("No tags were found");
     }
   }
 
+  public class CameraNotStreaming extends Exception {
+    public CameraNotStreaming() {
+      super("The camera is not streaming");
+    }
+  }
+
+  public class CameraNotConnected extends Exception {
+    public CameraNotConnected() {
+      super("The camera is not connected");
+    }
+  }
+
+  public class AprilTag extends AprilTagDetection {
+    public enum AprilTagPosition {
+      LEFT, CENTER, RIGHT, UNKNOWN
+    }
+
+    public AprilTagPosition position = AprilTagPosition.UNKNOWN;
+
+    public AprilTag(AprilTagDetection detection) {
+      //AprilTagDetection​(int id, int hamming, float decisionMargin, org.opencv.core.Point center, org.opencv.core.Point[] corners, AprilTagMetadata metadata, AprilTagPoseFtc ftcPose, AprilTagPoseRaw rawPose, long frameAcquisitionNanoTime)
+      super(detection.id, detection.hamming, detection.decisionMargin, detection.center, detection.corners,
+          detection.metadata, detection.ftcPose, detection.rawPose, detection.frameAcquisitionNanoTime);
+      if (detection.id == 1 || detection.id == 4) {
+        position = AprilTagPosition.LEFT;
+      }
+      if (detection.id == 2 || detection.id == 5) {
+        position = AprilTagPosition.CENTER;
+      }
+      if (detection.id == 3 || detection.id == 6) {
+        position = AprilTagPosition.RIGHT;
+      }
+    }
+  }
 } // end class
