@@ -265,7 +265,7 @@ public class CameraTeleop extends OpMode {
 
   // degrees are more sensitive than inches, so they need finer control
   public final double turnSensitivity = 0.05;
-  public final double sensitivity = 0.2;
+  public final double sensitivity = 0.15;
   public final double speedLimit = 0.2;
 
   public void placePixel(Camera.AprilTagPosition position) {
