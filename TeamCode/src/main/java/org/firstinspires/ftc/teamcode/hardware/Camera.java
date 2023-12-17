@@ -14,6 +14,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /*
  * This OpMode illustrates the basics of AprilTag recognition and pose estimation, using
@@ -45,9 +46,9 @@ public class Camera {
   /**
    * Initialize the AprilTag processor.
    */
-  public void initAprilTag() throws CameraNotConnectedException {
+  public void initAprilTag() throws CameraNotAttachedException {
     if (!webcam.isAttached()) {
-      throw new CameraNotConnectedException();
+      throw new CameraNotAttachedException();
     }
 
     // Create the AprilTag processor by using a builder.
@@ -60,8 +61,27 @@ public class Camera {
 
   } // end method initAprilTag()
 
-  public enum AprilTagPositions {
-    LEFT, CENTER, RIGHT
+  /**
+   * Retrieves the list of AprilTags detected by the camera.
+   *
+   * @return         	A list of AprilTag objects representing the detected tags.
+   * @throws CameraNotStreamingException  If the camera is not currently streaming.
+   * @throws NoTagsFoundException         If no AprilTags are found in the current frame.
+   * @throws CameraNotAttachedException   If the camera is not attached.
+   */
+  public List<AprilTag> getAprilTags()
+      throws CameraNotStreamingException, NoTagsFoundException, CameraNotAttachedException {
+    if (!webcam.isAttached()) {
+      throw new CameraNotAttachedException();
+    }
+    if (visionPortal.getCameraState() != CameraState.STREAMING) {
+      throw new CameraNotStreamingException();
+    }
+    List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+    if (currentDetections.size() == 0) {
+      throw new NoTagsFoundException();
+    }
+    return currentDetections.stream().map(aprilTag -> new AprilTag(aprilTag)).collect(Collectors.toList());
   }
 
   /**
@@ -72,7 +92,7 @@ public class Camera {
    * @throws CameraNotStreamingException If the camera is not streaming.
    * @throws NoTagsFoundException        If no tags are found.
    */
-  public AprilTagDetection getAprilTag(AprilTagPositions tag) throws CameraNotStreaming, NoTagsFound, TagNotFound {
+  /*public AprilTagDetection getAprilTag(AprilTagPositions tag) throws CameraNotStreaming, NoTagsFound, TagNotFound {
     visionPortal.resumeStreaming();
     if (visionPortal.getCameraState() != CameraState.STREAMING) {
       throw new CameraNotStreaming();
@@ -115,7 +135,7 @@ public class Camera {
       throw new TagNotFound();
     }
   }
-
+  
   public AprilTagPositions getAvalableAprilTags() throws CameraNotStreaming, NoTagsFound, Exception {
     visionPortal.resumeStreaming();
     if (visionPortal.getCameraState() != CameraState.STREAMING) {
@@ -139,37 +159,42 @@ public class Camera {
     } else {
       throw new Exception("Some unexpected error happened while detecting available tag positions");
     }
-  }
+  }*/
 
   /**
    * Add telemetry about AprilTag detections.
    */
   public void telemetryAprilTag(Telemetry telemetry) {
+    if (!webcam.isAttached()) {
+      telemetry.addLine("Camera is not attached");
+    } else if (visionPortal.getCameraState() != CameraState.STREAMING) {
+      telemetry.addLine("Camera is not streaming");
+    } else {
+      List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+      telemetry.addData("# AprilTags Detected", currentDetections.size());
 
-    List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-    telemetry.addData("# AprilTags Detected", currentDetections.size());
+      // Step through the list of detections and display info for each one.
+      for (AprilTagDetection detection : currentDetections) {
+        if (detection.metadata != null) {
+          telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
+          telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y,
+              detection.ftcPose.z));
+          telemetry
+              .addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll,
+                  detection.ftcPose.yaw));
+          telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range,
+              detection.ftcPose.bearing, detection.ftcPose.elevation));
+        } else {
+          telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
+          telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
+        }
+      } // end for() loop
 
-    // Step through the list of detections and display info for each one.
-    for (AprilTagDetection detection : currentDetections) {
-      if (detection.metadata != null) {
-        telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
-        telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y,
-            detection.ftcPose.z));
-        telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll,
-            detection.ftcPose.yaw));
-        telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range,
-            detection.ftcPose.bearing, detection.ftcPose.elevation));
-      } else {
-        telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
-        telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
-      }
-    } // end for() loop
-
-    // Add "key" information to telemetry
-    telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
-    telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
-    telemetry.addLine("RBE = Range, Bearing & Elevation");
-
+      // Add "key" information to telemetry
+      telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
+      telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
+      telemetry.addLine("RBE = Range, Bearing & Elevation");
+    }
   } // end method telemetryAprilTag()
 
   /*
@@ -189,21 +214,21 @@ public class Camera {
    * }
    * }
    */
-  public class NoTagsFound extends Exception {
-    public NoTagsFound() {
+  public class NoTagsFoundException extends Exception {
+    public NoTagsFoundException() {
       super("No tags were found");
     }
   }
 
-  public class CameraNotStreaming extends Exception {
-    public CameraNotStreaming() {
+  public class CameraNotStreamingException extends Exception {
+    public CameraNotStreamingException() {
       super("The camera is not streaming");
     }
   }
 
-  public class CameraNotConnected extends Exception {
-    public CameraNotConnected() {
-      super("The camera is not connected");
+  public class CameraNotAttachedException extends Exception {
+    public CameraNotAttachedException() {
+      super("The camera is not attached");
     }
   }
 
