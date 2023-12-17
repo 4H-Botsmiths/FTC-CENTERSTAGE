@@ -89,7 +89,11 @@ public class Camera {
     if (!webcam.isAttached()) {
       throw new CameraNotAttachedException();
     }
-    visionPortal.stopStreaming();
+    try {
+      visionPortal.stopStreaming();
+    } catch (Exception e) {
+      //This function has called errors before
+    }
   }
 
   public void resume() throws CameraNotAttachedException {
