@@ -84,82 +84,19 @@ public class Camera {
     return currentDetections.stream().map(aprilTag -> new AprilTag(aprilTag)).collect(Collectors.toList());
   }
 
-  /**
-   * Get the AprilTag detection for the given tag.
-   *
-   * @param tag The AprilTags enum value representing the tag to detect.
-   * @return The AprilTagDetection object representing the detected tag.
-   * @throws CameraNotStreamingException If the camera is not streaming.
-   * @throws NoTagsFoundException        If no tags are found.
-   */
-  /*public AprilTagDetection getAprilTag(AprilTagPositions tag) throws CameraNotStreaming, NoTagsFound, TagNotFound {
-    visionPortal.resumeStreaming();
-    if (visionPortal.getCameraState() != CameraState.STREAMING) {
-      throw new CameraNotStreaming();
+  public void pause() throws CameraNotAttachedException {
+    if (!webcam.isAttached()) {
+      throw new CameraNotAttachedException();
     }
-    switch (tag) {
-      case RIGHT:
-        visionPortal.setActiveCamera(webcam);
-        break;
-      case CENTER:
-        visionPortal.setActiveCamera(webcam);
-        break;
-      case LEFT:
-        visionPortal.setActiveCamera(webcam2);
-        break;
-    }
-    List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-    // Step through the list of detections and display info for each one.
-    for (AprilTagDetection detection : currentDetections) {
-      switch (tag) {
-        case LEFT:
-          if (detection.id == 1 || detection.id == 4) {
-            return detection;
-          }
-          break;
-        case CENTER:
-          if (detection.id == 2 || detection.id == 5) {
-            return detection;
-          }
-          break;
-        case RIGHT:
-          if (detection.id == 3 || detection.id == 6) {
-            return detection;
-          }
-          break;
-      }
-    }
-    if (currentDetections.size() == 0) {
-      throw new NoTagsFound();
-    } else {
-      throw new TagNotFound();
-    }
+    visionPortal.stopStreaming();
   }
-  
-  public AprilTagPositions getAvalableAprilTags() throws CameraNotStreaming, NoTagsFound, Exception {
+
+  public void resume() throws CameraNotAttachedException {
+    if (!webcam.isAttached()) {
+      throw new CameraNotAttachedException();
+    }
     visionPortal.resumeStreaming();
-    if (visionPortal.getCameraState() != CameraState.STREAMING) {
-      throw new CameraNotStreaming();
-    }
-    List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-    // Step through the list of detections and display info for each one.
-    for (AprilTagDetection detection : currentDetections) {
-      if (detection.id == 1 || detection.id == 4) {
-        return AprilTagPositions.LEFT;
-      }
-      if (detection.id == 2 || detection.id == 5) {
-        return AprilTagPositions.CENTER;
-      }
-      if (detection.id == 3 || detection.id == 6) {
-        return AprilTagPositions.RIGHT;
-      }
-    }
-    if (currentDetections.size() == 0) {
-      throw new NoTagsFound();
-    } else {
-      throw new Exception("Some unexpected error happened while detecting available tag positions");
-    }
-  }*/
+  }
 
   /**
    * Add telemetry about AprilTag detections.
