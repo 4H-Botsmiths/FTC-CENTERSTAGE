@@ -67,6 +67,13 @@ public class Robot {
       this.rightMotor = right;
     }
 
+    public void setSpeed(double speed) {
+      if (status == LiftStatus.RAISED || status == LiftStatus.LOWERED) {
+        leftMotor.setSpeed(speed);
+        rightMotor.setSpeed(speed);
+      }
+    }
+
     public LiftStatus status = LiftStatus.LOWERED;
     private ElapsedTime liftClock = new ElapsedTime();
     private final int DURATION = 1750;

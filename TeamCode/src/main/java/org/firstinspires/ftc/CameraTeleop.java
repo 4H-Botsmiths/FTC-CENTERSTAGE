@@ -136,20 +136,14 @@ public class CameraTeleop extends OpMode {
       } else {
         robot.trapdoor.setPosition(1);
 
-        if (gamepad2.left_bumper) {
-          robot.intake.setSpeed(-gamepad2.left_trigger);
-        } else {
-          robot.intake.setSpeed(gamepad2.left_trigger);
-        }
+        robot.intake.setSpeed(gamepad2.right_trigger > 0 ? -gamepad2.right_trigger : gamepad2.left_trigger);
       }
       if (gamepad2.dpad_up) {
         robot.lift.raise();
       } else if (gamepad2.dpad_down) {
         robot.lift.lower();
-      } else if (gamepad2.y) {
-        robot.leftRiser.setSpeed(gamepad2.left_stick_y * -0.5);
-        robot.rightRiser.setSpeed(gamepad2.left_stick_y * -0.5);
       }
+      robot.lift.setSpeed(-gamepad2.left_stick_y * 0.5);
 
       /** 0 = down; 1 = up */
       robot.leftElbow.setPosition(elbowPosition);
@@ -199,21 +193,35 @@ public class CameraTeleop extends OpMode {
 
   public PixelPosition getPosition() {
     PixelPosition driverChoice = PixelPosition.NONE;
-    if (gamepad1.x) {
+    if (gamepad1.left_bumper && gamepad1.right_bumper) {
+      driverChoice = PixelPosition.CENTER;
+    } else if (gamepad1.left_bumper) {
+      driverChoice = PixelPosition.LEFT;
+    } else if (gamepad1.right_bumper) {
+      driverChoice = PixelPosition.RIGHT;
+    }
+    /*if (gamepad1.x) {
       driverChoice = PixelPosition.LEFT;
     } else if (gamepad1.a) {
       driverChoice = PixelPosition.CENTER;
     } else if (gamepad1.b) {
       driverChoice = PixelPosition.RIGHT;
-    }
+    }*/
     PixelPosition operatorChoice = PixelPosition.NONE;
-    if (gamepad2.x) {
+    if (gamepad2.left_bumper && gamepad2.right_bumper) {
+      operatorChoice = PixelPosition.CENTER;
+    } else if (gamepad2.left_bumper) {
+      operatorChoice = PixelPosition.LEFT;
+    } else if (gamepad2.right_bumper) {
+      operatorChoice = PixelPosition.RIGHT;
+    }
+    /*if (gamepad2.x) {
       operatorChoice = PixelPosition.LEFT;
     } else if (gamepad2.a) {
       operatorChoice = PixelPosition.CENTER;
     } else if (gamepad2.b) {
       operatorChoice = PixelPosition.RIGHT;
-    }
+    }*/
     if (driverChoice == operatorChoice) {
       gamepad1.stopRumble();
       gamepad2.stopRumble();
@@ -318,12 +326,14 @@ public class CameraTeleop extends OpMode {
           }
         }
       } catch (Camera.CameraNotStreamingException e) {
+        Drive(0, 0, 0);
         //Do nothing, the camera should be starting
       } catch (Camera.NoTagsFoundException e) {
         Drive(0, 0, 0);
       }
     } catch (Camera.CameraNotAttachedException e) {
       //Function can't run
+      telemetry.speak("Camera is not attached");
       //TODO: notify user
     }
   }
