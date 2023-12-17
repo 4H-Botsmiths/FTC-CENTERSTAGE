@@ -267,6 +267,7 @@ public class CameraTeleop extends OpMode {
   public final double turnSensitivity = 0.05;
   public final double sensitivity = 0.15;
   public final double speedLimit = 0.2;
+  public final double turnSpeedLimit = 0.1;
 
   public void placePixel(Camera.AprilTagPosition position) {
     try {
@@ -290,7 +291,7 @@ public class CameraTeleop extends OpMode {
           */
           Drive(Range.clip(tag.ftcPose.x * sensitivity, -speedLimit, speedLimit),
               Range.clip((tag.ftcPose.y - 20) * sensitivity, -speedLimit, speedLimit),
-              Range.clip(tag.ftcPose.yaw * -turnSensitivity, -speedLimit, speedLimit));
+              Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
         } else {
           for (Camera.AprilTag _tag : tags) {
             if (_tag.position != Camera.AprilTagPosition.CENTER) {
@@ -302,17 +303,17 @@ public class CameraTeleop extends OpMode {
             case LEFT:
               Drive(tag.position == Camera.AprilTagPosition.CENTER ? -0.2 : -0.3,
                   Range.clip((tag.ftcPose.y - 20) * sensitivity, -speedLimit, speedLimit),
-                  Range.clip(tag.ftcPose.yaw * -turnSensitivity, -speedLimit, speedLimit));
+                  Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
               break;
             case RIGHT:
               Drive(tag.position == Camera.AprilTagPosition.CENTER ? 0.2 : 0.3,
                   Range.clip((tag.ftcPose.y - 20) * sensitivity, -speedLimit, speedLimit),
-                  Range.clip(tag.ftcPose.yaw * -turnSensitivity, -speedLimit, speedLimit));
+                  Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
               break;
             case CENTER:
               Drive(tag.position == Camera.AprilTagPosition.LEFT ? 0.2 : -0.2,
                   Range.clip((tag.ftcPose.y - 20) * sensitivity, -speedLimit, speedLimit),
-                  Range.clip(tag.ftcPose.yaw * -turnSensitivity, -speedLimit, speedLimit));
+                  Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
               break;
           }
         }
