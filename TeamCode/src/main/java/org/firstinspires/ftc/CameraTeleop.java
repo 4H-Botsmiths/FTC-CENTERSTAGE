@@ -290,31 +290,28 @@ public class CameraTeleop extends OpMode {
               Range.clip((tag.ftcPose.y - 20) * sensitivity, -speedLimit, speedLimit),
               Range.clip(tag.ftcPose.yaw * -sensitivity, -speedLimit, speedLimit));
         } else {
-          if (tags.size() == 2) {
-            Drive(Range.clip((tags.get(1).ftcPose.x + tags.get(0).ftcPose.x) * sensitivity, -speedLimit, speedLimit),
-                Range.clip(((tags.get(0).ftcPose.y + tags.get(1).ftcPose.y) / 2 - 20) * sensitivity, -speedLimit,
-                    speedLimit),
-                Range.clip(((tags.get(0).ftcPose.yaw + tags.get(1).ftcPose.yaw) / 2) * -sensitivity, -speedLimit,
-                    speedLimit));
-          } else {
-            tag = tags.get(0);
-            switch (position) {
-              case LEFT:
-                Drive(tag.position == Camera.AprilTagPosition.CENTER ? -0.2 : -0.3,
-                    Range.clip((tag.ftcPose.y - 20) * sensitivity, -speedLimit, speedLimit),
-                    Range.clip(tag.ftcPose.yaw * -sensitivity, -speedLimit, speedLimit));
-                break;
-              case RIGHT:
-                Drive(tag.position == Camera.AprilTagPosition.CENTER ? 0.2 : 0.3,
-                    Range.clip((tag.ftcPose.y - 20) * sensitivity, -speedLimit, speedLimit),
-                    Range.clip(tag.ftcPose.yaw * -sensitivity, -speedLimit, speedLimit));
-                break;
-              case CENTER:
-                Drive(tag.position == Camera.AprilTagPosition.LEFT ? 0.2 : -0.2,
-                    Range.clip((tag.ftcPose.y - 20) * sensitivity, -speedLimit, speedLimit),
-                    Range.clip(tag.ftcPose.yaw * -sensitivity, -speedLimit, speedLimit));
-                break;
+          for (Camera.AprilTag _tag : tags) {
+            if (_tag.position != Camera.AprilTagPosition.CENTER) {
+              tag = _tag;
             }
+          }
+          tag = tag == null ? tags.get(0) : tag;
+          switch (position) {
+            case LEFT:
+              Drive(tag.position == Camera.AprilTagPosition.CENTER ? -0.2 : -0.3,
+                  Range.clip((tag.ftcPose.y - 20) * sensitivity, -speedLimit, speedLimit),
+                  Range.clip(tag.ftcPose.yaw * -sensitivity, -speedLimit, speedLimit));
+              break;
+            case RIGHT:
+              Drive(tag.position == Camera.AprilTagPosition.CENTER ? 0.2 : 0.3,
+                  Range.clip((tag.ftcPose.y - 20) * sensitivity, -speedLimit, speedLimit),
+                  Range.clip(tag.ftcPose.yaw * -sensitivity, -speedLimit, speedLimit));
+              break;
+            case CENTER:
+              Drive(tag.position == Camera.AprilTagPosition.LEFT ? 0.2 : -0.2,
+                  Range.clip((tag.ftcPose.y - 20) * sensitivity, -speedLimit, speedLimit),
+                  Range.clip(tag.ftcPose.yaw * -sensitivity, -speedLimit, speedLimit));
+              break;
           }
         }
       } catch (Camera.CameraNotStreamingException e) {
