@@ -316,6 +316,9 @@ public class CameraTeleop extends OpMode {
     } else if (gamepad.right_bumper) {
       superuserChoice = PixelPosition.RIGHT;
     }
+    if (superuserChoice == PixelPosition.NONE) {
+      gamepad.stopRumble();
+    }
     return superuserChoice;
   }
 
@@ -392,13 +395,21 @@ public class CameraTeleop extends OpMode {
         gamepad2.stopRumble();
       } catch (Camera.CameraNotStreamingException e) {
         robot.Drive(0, 0, 0);
-        gamepad1.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
-        gamepad2.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+        if (superuser != null) {
+          superuser.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+        } else {
+          gamepad1.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+          gamepad2.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+        }
         //Do nothing, the camera should be starting
       } catch (Camera.NoTagsFoundException e) {
         robot.Drive(0.5); //Reduce speed by 50%
-        gamepad1.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
-        gamepad2.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+        if (superuser != null) {
+          superuser.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+        } else {
+          gamepad1.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+          gamepad2.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+        }
       }
     } catch (Camera.CameraNotAttachedException e) {
       //Function can't run
