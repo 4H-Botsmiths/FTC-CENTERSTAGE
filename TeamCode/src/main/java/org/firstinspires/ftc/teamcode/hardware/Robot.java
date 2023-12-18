@@ -102,7 +102,7 @@ public class Robot {
     public LiftStatus status = LiftStatus.LOWERED;
     private ElapsedTime liftClock = new ElapsedTime();
     private final int RAISE_DURATION = 2000;
-    private final int LOWER_DURATION = 1750;
+    private final int LOWER_DURATION = 1800;
 
     private double calcSpeed(double time, double duration) {
       return Range.clip(time < 0.5 * duration ? 1 : (duration - time) / duration, 0, 1);
@@ -113,7 +113,7 @@ public class Robot {
         return;
       }
       if (status == LiftStatus.LOWERING) {
-        double raiseTime = (liftClock.milliseconds() / LOWER_DURATION) * RAISE_DURATION;
+        double raiseTime = liftClock.milliseconds() + 500;
         status = LiftStatus.RAISING;
         liftClock.reset();
         CompletableFuture.runAsync(() -> {
@@ -163,7 +163,7 @@ public class Robot {
         return;
       }
       if (status == LiftStatus.RAISING) {
-        double lowerTime = liftClock.milliseconds();
+        double lowerTime = liftClock.milliseconds() + 500;
         status = LiftStatus.LOWERING;
         liftClock.reset();
         CompletableFuture.runAsync(() -> {
