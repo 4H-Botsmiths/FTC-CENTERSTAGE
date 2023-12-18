@@ -269,8 +269,10 @@ public class CameraTeleop extends OpMode {
       operatorChoice = PixelPosition.RIGHT;
     }*/
     if (driverChoice == operatorChoice) {
-      gamepad1.stopRumble();
-      gamepad2.stopRumble();
+      if (driverChoice == PixelPosition.NONE) {
+        gamepad1.stopRumble();
+        gamepad2.stopRumble();
+      }
       return driverChoice;
     } else {
       switch (driverChoice) {
@@ -278,13 +280,13 @@ public class CameraTeleop extends OpMode {
           gamepad2.stopRumble();
           break;
         case LEFT:
-          gamepad2.rumble(1, 0, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+          gamepad2.rumble(0.5, 0, Gamepad.RUMBLE_DURATION_CONTINUOUS);
           break;
         case CENTER:
-          gamepad2.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+          gamepad2.rumble(0.5, 0.5, Gamepad.RUMBLE_DURATION_CONTINUOUS);
           break;
         case RIGHT:
-          gamepad2.rumble(0, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+          gamepad2.rumble(0, 0.5, Gamepad.RUMBLE_DURATION_CONTINUOUS);
           break;
       }
       switch (operatorChoice) {
@@ -292,13 +294,13 @@ public class CameraTeleop extends OpMode {
           gamepad1.stopRumble();
           break;
         case LEFT:
-          gamepad1.rumble(1, 0, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+          gamepad1.rumble(0.5, 0, Gamepad.RUMBLE_DURATION_CONTINUOUS);
           break;
         case CENTER:
-          gamepad1.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+          gamepad1.rumble(0.5, 0.5, Gamepad.RUMBLE_DURATION_CONTINUOUS);
           break;
         case RIGHT:
-          gamepad1.rumble(0, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+          gamepad1.rumble(0, 0.5, Gamepad.RUMBLE_DURATION_CONTINUOUS);
           break;
       }
       return PixelPosition.NONE;
@@ -386,11 +388,17 @@ public class CameraTeleop extends OpMode {
               break;
           }
         }
+        gamepad1.stopRumble();
+        gamepad2.stopRumble();
       } catch (Camera.CameraNotStreamingException e) {
         Drive(0, 0, 0);
+        gamepad1.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+        gamepad2.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
         //Do nothing, the camera should be starting
       } catch (Camera.NoTagsFoundException e) {
         Drive(0, 0, 0);
+        gamepad1.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+        gamepad2.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
       }
     } catch (Camera.CameraNotAttachedException e) {
       //Function can't run
