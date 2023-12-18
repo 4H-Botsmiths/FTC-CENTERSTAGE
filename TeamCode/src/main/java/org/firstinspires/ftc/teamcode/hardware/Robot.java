@@ -119,7 +119,18 @@ public class Robot {
    * @param  factor  the factor to multiply the current speeds by
    */
   public void Drive(double factor) {
-    Drive(speeds[0] * factor, speeds[1] * factor, speeds[2] * factor);
+    double x, y, z;
+    x = speeds[0] * factor;
+    y = speeds[1] * factor;
+    z = speeds[2] * factor;
+    m1 = Range.clip(y + x + z, -1, 1);
+    m2 = Range.clip(y - x - z, -1, 1);
+    m3 = Range.clip(y - x + z, -1, 1);
+    m4 = Range.clip(y + x - z, -1, 1);
+    frontLeft.setSpeed(m1);
+    frontRight.setSpeed(m2);
+    rearLeft.setSpeed(m3);
+    rearRight.setSpeed(m4);
   }
 
   public enum LiftStatus {
