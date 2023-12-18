@@ -359,7 +359,7 @@ public class CameraTeleop extends OpMode {
                                     : currentDetection.ftcPose.yaw < -1 ? 0.1 : 0);
           */
           Drive(Range.clip(tag.ftcPose.x * sensitivity, -speedLimit, speedLimit),
-              Range.clip((tag.ftcPose.y - DISTANCE) * sensitivity, -speedLimit, speedLimit),
+              Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
               Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
         } else {
           for (Camera.AprilTag _tag : tags) {
@@ -371,17 +371,17 @@ public class CameraTeleop extends OpMode {
           switch (position) {
             case LEFT:
               Drive(tag.position == Camera.AprilTagPosition.CENTER ? -0.2 : -0.3,
-                  Range.clip((tag.ftcPose.y - DISTANCE) * sensitivity, -speedLimit, speedLimit),
+                  Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
                   Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
               break;
             case RIGHT:
               Drive(tag.position == Camera.AprilTagPosition.CENTER ? 0.2 : 0.3,
-                  Range.clip((tag.ftcPose.y - DISTANCE) * sensitivity, -speedLimit, speedLimit),
+                  Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
                   Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
               break;
             case CENTER:
               Drive(tag.position == Camera.AprilTagPosition.LEFT ? 0.2 : -0.2,
-                  Range.clip((tag.ftcPose.y - DISTANCE) * sensitivity, -speedLimit, speedLimit),
+                  Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
                   Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
               break;
           }
