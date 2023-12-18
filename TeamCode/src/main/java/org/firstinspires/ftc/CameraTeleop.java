@@ -347,9 +347,8 @@ public class CameraTeleop extends OpMode {
   public void loop() {
     telemetry.addData("Status", "Running");
     telemetry.addData("Voltage", Math.round(robot.voltage.getVoltage() * 100) / 100);
-    telemetry.addData("Performance", Math.round(robot.performance * 100));
     telemetry.addData("Average Voltage", Math.round(robot.averageVoltage * 100) / 100);
-    telemetry.addData("Average Performance", Math.round(robot.averagePerformance * 100));
+    telemetry.addData("Performance", "%d%%", Math.round(robot.performance * 100));
     telemetry.addData("Front Left", Math.round(robot.frontLeft.getSpeed() * 100));
     telemetry.addData("Front Right", Math.round(robot.frontRight.getSpeed() * 100));
     telemetry.addData("Rear Right", Math.round(robot.rearRight.getSpeed() * 100));
