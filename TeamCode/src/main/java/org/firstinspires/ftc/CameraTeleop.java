@@ -396,14 +396,14 @@ public class CameraTeleop extends OpMode {
       } catch (Camera.CameraNotStreamingException e) {
         robot.Drive(0, 0, 0);
         if (superuser != null) {
-          superuser.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+          superuser.rumble(0.25, 0.25, Gamepad.RUMBLE_DURATION_CONTINUOUS);
         } else {
-          gamepad1.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
-          gamepad2.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+          gamepad1.rumble(0.25, 0.25, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+          gamepad2.rumble(0.25, 0.25, Gamepad.RUMBLE_DURATION_CONTINUOUS);
         }
         //Do nothing, the camera should be starting
       } catch (Camera.NoTagsFoundException e) {
-        robot.Drive(0.5); //Reduce speed by 50%
+        robot.Drive(0.50); //Reduce speed by 50%
         if (superuser != null) {
           superuser.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
         } else {
