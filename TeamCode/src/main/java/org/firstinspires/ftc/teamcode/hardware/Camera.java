@@ -206,8 +206,9 @@ public class Camera {
       //AprilTagDetection​(int id, int hamming, float decisionMargin, org.opencv.core.Point center, org.opencv.core.Point[] corners, AprilTagMetadata metadata, AprilTagPoseFtc ftcPose, AprilTagPoseRaw rawPose, long frameAcquisitionNanoTime)
       super(detection.id, detection.hamming, detection.decisionMargin, detection.center, detection.corners,
           detection.metadata,
-          new AprilTagPoseFtc(detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z, detection.ftcPose.yaw + 2,
-              detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.range, detection.ftcPose.bearing,
+          new AprilTagPoseFtc(detection.ftcPose.x - 0.6, detection.ftcPose.y, detection.ftcPose.z,
+              detection.ftcPose.yaw + 1.8,
+              detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.range - 9.8, detection.ftcPose.bearing,
               detection.ftcPose.elevation),
           detection.rawPose, detection.frameAcquisitionNanoTime);
       if (detection.id == 1 || detection.id == 4) {
