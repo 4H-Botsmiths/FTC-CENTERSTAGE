@@ -207,7 +207,7 @@ public class Camera {
       super(detection.id, detection.hamming, detection.decisionMargin, detection.center, detection.corners,
           detection.metadata,
           new AprilTagPoseFtc(detection.ftcPose.x - 0.6, detection.ftcPose.y, detection.ftcPose.z,
-              detection.ftcPose.yaw + 1.8,
+              detection.ftcPose.yaw + 1.87,
               detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.range - 9.8, detection.ftcPose.bearing,
               detection.ftcPose.elevation),
           detection.rawPose, detection.frameAcquisitionNanoTime);
