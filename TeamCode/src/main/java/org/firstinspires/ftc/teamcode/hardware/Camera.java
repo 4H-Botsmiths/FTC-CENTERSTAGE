@@ -77,6 +77,8 @@ public class Camera {
       throws CameraNotStreamingException, NoTagsFoundException, CameraNotAttachedException {
     if (!webcam.isAttached()) {
       throw new CameraNotAttachedException();
+    } else if (visionPortal == null) {
+      initAprilTag();
     }
     if (visionPortal.getCameraState() != CameraState.STREAMING) {
       throw new CameraNotStreamingException();
@@ -91,6 +93,8 @@ public class Camera {
   public void pause() throws CameraNotAttachedException {
     if (!webcam.isAttached()) {
       throw new CameraNotAttachedException();
+    } else if (visionPortal == null) {
+      initAprilTag();
     }
     if (this.visionPortal.getCameraState() == CameraState.OPENING_CAMERA_DEVICE) {
       //You can't stop a camera stream before the device is opened
@@ -117,6 +121,8 @@ public class Camera {
   public void resume() throws CameraNotAttachedException {
     if (!webcam.isAttached()) {
       throw new CameraNotAttachedException();
+    } else if (visionPortal == null) {
+      initAprilTag();
     }
     visionPortal.resumeStreaming();
   }
