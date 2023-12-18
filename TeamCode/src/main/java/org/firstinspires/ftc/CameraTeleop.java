@@ -101,67 +101,113 @@ public class CameraTeleop extends OpMode {
     runtime.reset();
   }
 
-  public boolean placingPixel = false;
-
   public void driverLoop() {
-    if (!placingPixel) {
-      double x = 0.625 * gamepad1.left_stick_x + 0.375 * gamepad1.left_stick_x * gamepad1.right_trigger
-          - 0.375 * gamepad1.left_stick_x * gamepad1.left_trigger;
-      double y = 0.625 * -gamepad1.left_stick_y + 0.375 * -gamepad1.left_stick_y * gamepad1.right_trigger
-          - 0.375 * -gamepad1.left_stick_y * gamepad1.left_trigger;
-      double z = 0.625 * gamepad1.right_stick_x + 0.375 * gamepad1.right_stick_x * gamepad1.right_trigger
-          - 0.375 * gamepad1.right_stick_x * gamepad1.left_trigger;
+    double x = 0.625 * gamepad1.left_stick_x + 0.375 * gamepad1.left_stick_x * gamepad1.right_trigger
+        - 0.375 * gamepad1.left_stick_x * gamepad1.left_trigger;
+    double y = 0.625 * -gamepad1.left_stick_y + 0.375 * -gamepad1.left_stick_y * gamepad1.right_trigger
+        - 0.375 * -gamepad1.left_stick_y * gamepad1.left_trigger;
+    double z = 0.625 * gamepad1.right_stick_x + 0.375 * gamepad1.right_stick_x * gamepad1.right_trigger
+        - 0.375 * gamepad1.right_stick_x * gamepad1.left_trigger;
 
-      // Drive System
-      Drive(x, y, z);
-    }
+    // Drive System
+    Drive(x, y, z);
   }
 
   double elbowPosition = 0;
 
   public void operatorLoop() {
 
-    if (!placingPixel) {
-      /*
-       * NOTES:
-       * what needs to be controlled:
-       * > Intake - left trigger DONE
-       * > Trapdoor - a DONE
-       * > Lift - left joystick DONE
-       * > Elbow - right joystick
-       */
-      if (gamepad2.y) {
-        robot.trapdoor.setPosition(0);
-        robot.intake.setSpeed(0.2);
-      } else {
-        robot.trapdoor.setPosition(1);
+    /*
+     * NOTES:
+     * what needs to be controlled:
+     * > Intake - left trigger DONE
+     * > Trapdoor - a DONE
+     * > Lift - left joystick DONE
+     * > Elbow - right joystick
+     */
+    if (gamepad2.a) {
+      robot.trapdoor.setPosition(0);
+      robot.intake.setSpeed(0.2);
+    } else {
+      robot.trapdoor.setPosition(1);
 
-        robot.intake.setSpeed(gamepad2.right_trigger > 0 ? -gamepad2.right_trigger : gamepad2.left_trigger);
-      }
-      if (gamepad2.dpad_up) {
-        robot.lift.raise();
-      } else if (gamepad2.dpad_down) {
-        robot.lift.lower();
-      }
-      robot.lift.setSpeed(-gamepad2.left_stick_y * 0.5);
-
-      /** 0 = down; 1 = up */
-      robot.leftElbow.setPosition(elbowPosition);
-      robot.rightElbow.setPosition(elbowPosition);
-      elbowPosition += -gamepad2.right_stick_y * 0.01;
-      elbowPosition = elbowPosition > 1 ? 1 : elbowPosition < 0 ? 0 : elbowPosition;
-      /*
-       * final double lowerLimit = 0.03;
-       * final double upperLimit = 0.4;
-       * elbowPosition = elbowPosition > upperLimit ? upperLimit
-       * : elbowPosition < lowerLimit ? lowerLimit : elbowPosition;
-       */
-
-      /*
-       * robot.leftElbow.setPosition(-gamepad2.right_stick_y);
-       * robot.rightElbow.setPosition(1 + gamepad2.right_stick_y);
-       */
+      robot.intake.setSpeed(gamepad2.right_trigger > 0 ? -gamepad2.right_trigger : gamepad2.left_trigger);
     }
+    if (gamepad2.dpad_up) {
+      robot.lift.raise();
+    } else if (gamepad2.dpad_down) {
+      robot.lift.lower();
+    }
+    robot.lift.setSpeed(-gamepad2.left_stick_y * 0.5);
+
+    /** 0 = down; 1 = up */
+    robot.leftElbow.setPosition(elbowPosition);
+    robot.rightElbow.setPosition(elbowPosition);
+    elbowPosition += -gamepad2.right_stick_y * 0.01;
+    elbowPosition = elbowPosition > 1 ? 1 : elbowPosition < 0 ? 0 : elbowPosition;
+    /*
+     * final double lowerLimit = 0.03;
+     * final double upperLimit = 0.4;
+     * elbowPosition = elbowPosition > upperLimit ? upperLimit
+     * : elbowPosition < lowerLimit ? lowerLimit : elbowPosition;
+     */
+
+    /*
+     * robot.leftElbow.setPosition(-gamepad2.right_stick_y);
+     * robot.rightElbow.setPosition(1 + gamepad2.right_stick_y);
+     */
+  }
+
+  public void superuserLoop(Gamepad gamepad) {
+    double x = 0.625 * gamepad.left_stick_x + 0.375 * gamepad.left_stick_x * gamepad.right_trigger
+        - 0.375 * gamepad.left_stick_x * gamepad.left_trigger;
+    double y = 0.625 * -gamepad.left_stick_y + 0.375 * -gamepad.left_stick_y * gamepad.right_trigger
+        - 0.375 * -gamepad.left_stick_y * gamepad.left_trigger;
+    double z = 0.625 * gamepad.right_stick_x + 0.375 * gamepad.right_stick_x * gamepad.right_trigger
+        - 0.375 * gamepad.right_stick_x * gamepad.left_trigger;
+
+    // Drive System
+    Drive(x, y, z);
+
+    /*
+     * NOTES:
+     * what needs to be controlled:
+     * > Intake - left trigger DONE
+     * > Trapdoor - a DONE
+     * > Lift - left joystick DONE
+     * > Elbow - right joystick
+     */
+    if (gamepad.a) {
+      robot.trapdoor.setPosition(0);
+      robot.intake.setSpeed(0.2);
+    } else {
+      robot.trapdoor.setPosition(1);
+
+      robot.intake.setSpeed(gamepad2.right_trigger > 0 ? -gamepad2.right_trigger : gamepad2.left_trigger);
+    }
+    if (gamepad.dpad_up) {
+      robot.lift.raise();
+    } else if (gamepad.dpad_down) {
+      robot.lift.lower();
+    }
+    robot.lift.setSpeed(gamepad.dpad_left ? -0.5 : gamepad.dpad_right ? 0.5 : 0);
+
+    /** 0 = down; 1 = up */
+    robot.leftElbow.setPosition(elbowPosition);
+    robot.rightElbow.setPosition(elbowPosition);
+    elbowPosition += -gamepad2.right_stick_y * 0.01;
+    elbowPosition = elbowPosition > 1 ? 1 : elbowPosition < 0 ? 0 : elbowPosition;
+    /*
+     * final double lowerLimit = 0.03;
+     * final double upperLimit = 0.4;
+     * elbowPosition = elbowPosition > upperLimit ? upperLimit
+     * : elbowPosition < lowerLimit ? lowerLimit : elbowPosition;
+     */
+
+    /*
+     * robot.leftElbow.setPosition(-gamepad2.right_stick_y);
+     * robot.rightElbow.setPosition(1 + gamepad2.right_stick_y);
+     */
   }
 
   /*
@@ -259,6 +305,18 @@ public class CameraTeleop extends OpMode {
     }
   }
 
+  public PixelPosition getPosition(Gamepad gamepad) {
+    PixelPosition superuserChoice = PixelPosition.NONE;
+    if (gamepad.left_bumper && gamepad.right_bumper) {
+      superuserChoice = PixelPosition.CENTER;
+    } else if (gamepad.left_bumper) {
+      superuserChoice = PixelPosition.LEFT;
+    } else if (gamepad.right_bumper) {
+      superuserChoice = PixelPosition.RIGHT;
+    }
+    return superuserChoice;
+  }
+
   public void reset() {
     Drive(0, 0, 0);
     robot.lift.lower();
@@ -342,6 +400,7 @@ public class CameraTeleop extends OpMode {
   }
 
   PixelPosition lastPosition = PixelPosition.NONE;
+  Gamepad superuser = null;
 
   /*
   * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
@@ -363,13 +422,26 @@ public class CameraTeleop extends OpMode {
         Math.round(robot.rightRiser.getSpeed() * 100));
     telemetry.addData("Elbow", "Left: %d; Right: %d", Math.round(robot.leftElbow.getPosition() * 100),
         Math.round(robot.rightElbow.getPosition() * 100));
-    PixelPosition position = getPosition();
+
+    if (gamepad1.a && gamepad1.b && gamepad1.x && gamepad1.y) {
+      superuser = gamepad1;
+    } else if (gamepad2.a && gamepad2.b && gamepad2.x && gamepad2.y) {
+      superuser = gamepad2;
+    } else if (gamepad1.b && gamepad2.b) {
+      superuser = null;
+    }
+
+    PixelPosition position = getPosition(superuser);
     if (position == PixelPosition.NONE) {
       if (lastPosition != PixelPosition.NONE) {
         reset();
       } else {
-        driverLoop();
-        operatorLoop();
+        if (superuser != null) {
+          superuserLoop(superuser);
+        } else {
+          driverLoop();
+          operatorLoop();
+        }
       }
     } else {
       switch (position) {
