@@ -407,7 +407,7 @@ public class CameraTeleop extends OpMode {
   */
   @Override
   public void loop() {
-    telemetry.addData("Status", "Running");
+    telemetry.addData("Status", superuser == null ? "Running" : "Running - Superuser Active");
     telemetry.addData("Voltage", Math.round(robot.voltage.getVoltage() * 100) / 100);
     telemetry.addData("Average Voltage", Math.round(robot.averageVoltage * 100) / 100);
     telemetry.addData("Performance", "%d%%", Math.round(robot.performance * 100));
@@ -431,7 +431,7 @@ public class CameraTeleop extends OpMode {
       superuser = null;
     }
 
-    PixelPosition position = getPosition(superuser);
+    PixelPosition position = superuser != null ? getPosition(superuser) : getPosition();
     if (position == PixelPosition.NONE) {
       if (lastPosition != PixelPosition.NONE) {
         reset();
