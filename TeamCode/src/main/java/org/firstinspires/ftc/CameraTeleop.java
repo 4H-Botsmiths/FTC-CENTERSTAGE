@@ -24,17 +24,17 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
  * This file contains an example of an iterative (Non-Linear) "OpMode".
  * An OpMode is a 'program' that runs in either the autonomous or the teleop
  * period of an FTC match.
- * The names of OpModes appear on the menu of the FTC Driver Station.
+ * The names of OpModes appear on the menu of the FTC robot.Driver Station.
  * When an selection is made from the menu, the corresponding OpMode
  * class Basic instantiated on the Robot Controller and executed.
  *
- * This particular OpMode just executes a basic Tank Drive Teleop for a two
+ * This particular OpMode just executes a basic Tank robot.Drive Teleop for a two
  * wheeled robot
  * It includes all the skeletal structure that all iterative OpModes contain.
  *
  * Use Android Studios to Copy this Class, and Paste it into your team's code
  * folder with a new name.
- * Remove or comment out the @Disabled line to add this opmode to the Driver
+ * Remove or comment out the @Disabled line to add this opmode to the robot.Driver
  * Station OpMode list
  */
 
@@ -109,8 +109,8 @@ public class CameraTeleop extends OpMode {
     double z = 0.625 * gamepad1.right_stick_x + 0.375 * gamepad1.right_stick_x * gamepad1.right_trigger
         - 0.375 * gamepad1.right_stick_x * gamepad1.left_trigger;
 
-    // Drive System
-    Drive(x, y, z);
+    // robot.Drive System
+    robot.Drive(x, y, z);
   }
 
   double elbowPosition = 0;
@@ -166,8 +166,8 @@ public class CameraTeleop extends OpMode {
     double z = 0.625 * gamepad.right_stick_x + 0.375 * gamepad.right_stick_x * gamepad.right_trigger
         - 0.375 * gamepad.right_stick_x * gamepad.left_trigger;
 
-    // Drive System
-    Drive(x, y, z);
+    // robot.Drive System
+    robot.Drive(x, y, z);
 
     /*
      * NOTES:
@@ -320,7 +320,7 @@ public class CameraTeleop extends OpMode {
   }
 
   public void reset() {
-    Drive(0, 0, 0);
+    robot.Drive(0, 0, 0);
     robot.lift.lower();
     robot.intake.setSpeed(0);
     robot.trapdoor.setPosition(0);
@@ -355,12 +355,12 @@ public class CameraTeleop extends OpMode {
         }
         if (tag != null) {
           /* Old algorithm:
-          Drive(currentDetection.ftcPose.x > 1 ? 0.1 : currentDetection.ftcPose.x < -1 ? -0.1 : 0,
+          robot.Drive(currentDetection.ftcPose.x > 1 ? 0.1 : currentDetection.ftcPose.x < -1 ? -0.1 : 0,
                             currentDetection.ftcPose.range > 20 ? 0.1 : currentDetection.ftcPose.range < 18 ? -0.1 : 0,
                             currentDetection.ftcPose.yaw > 1 ? -0.1
                                     : currentDetection.ftcPose.yaw < -1 ? 0.1 : 0);
           */
-          Drive(Range.clip(tag.ftcPose.x * sensitivity, -speedLimit, speedLimit),
+          robot.Drive(Range.clip(tag.ftcPose.x * sensitivity, -speedLimit, speedLimit),
               Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
               Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
         } else {
@@ -372,17 +372,17 @@ public class CameraTeleop extends OpMode {
           tag = tag == null ? tags.get(0) : tag;
           switch (position) {
             case LEFT:
-              Drive(tag.position == Camera.AprilTagPosition.CENTER ? -0.2 : -0.3,
+              robot.Drive(tag.position == Camera.AprilTagPosition.CENTER ? -0.2 : -0.3,
                   Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
                   Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
               break;
             case RIGHT:
-              Drive(tag.position == Camera.AprilTagPosition.CENTER ? 0.2 : 0.3,
+              robot.Drive(tag.position == Camera.AprilTagPosition.CENTER ? 0.2 : 0.3,
                   Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
                   Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
               break;
             case CENTER:
-              Drive(tag.position == Camera.AprilTagPosition.LEFT ? 0.2 : -0.2,
+              robot.Drive(tag.position == Camera.AprilTagPosition.LEFT ? 0.2 : -0.2,
                   Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
                   Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
               break;
@@ -391,12 +391,12 @@ public class CameraTeleop extends OpMode {
         gamepad1.stopRumble();
         gamepad2.stopRumble();
       } catch (Camera.CameraNotStreamingException e) {
-        Drive(0, 0, 0);
+        robot.Drive(0, 0, 0);
         gamepad1.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
         gamepad2.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
         //Do nothing, the camera should be starting
       } catch (Camera.NoTagsFoundException e) {
-        Drive(0, 0, 0);
+        robot.Drive(0.5); //Reduce speed by 50%
         gamepad1.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
         gamepad2.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
       }
@@ -478,28 +478,5 @@ public class CameraTeleop extends OpMode {
    */
   @Override
   public void stop() {
-  }
-
-  public double m1, m2, m3, m4;
-
-  public void Drive(double x, double y, double z) {
-    // r *= steeringMultiplier;
-    m1 = Range.clip(y + x + z, -1, 1);
-    m2 = Range.clip(y - x - z, -1, 1);
-    m3 = Range.clip(y - x + z, -1, 1);
-    m4 = Range.clip(y + x - z, -1, 1);
-    // gamepad1.rumble((m1 + m3) / 2, (m2 + m4) / 2,
-    // Gamepad.RUMBLE_DURATION_CONTINUOUS);
-    /*
-     * frontLeft.setVelocity(m1);
-     * frontRight.setVelocity(m2);
-     * rearLeft.setVelocity(m3);
-     * rearRight.setVelocity(m4);
-     */
-    robot.frontLeft.setSpeed(m1);
-    robot.frontRight.setSpeed(m2);
-    robot.rearLeft.setSpeed(m3);
-    robot.rearRight.setSpeed(m4);
-
   }
 }

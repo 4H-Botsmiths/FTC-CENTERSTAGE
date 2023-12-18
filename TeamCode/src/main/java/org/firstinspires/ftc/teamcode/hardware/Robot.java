@@ -79,6 +79,49 @@ public class Robot {
   public double averagePerformance = 100;
   public double performance = 100;
 
+  public double m1, m2, m3, m4;
+  private double[] speeds = new double[] { 0, 0, 0 };
+
+  /**
+   * Drive the robot by setting the speeds of the four motors based on the input values.
+   *
+   * @param  x  the value of the x-axis input, ranging from -1 to 1
+   * @param  y  the value of the y-axis input, ranging from -1 to 1
+   * @param  z  the value of the z-axis input, ranging from -1 to 1
+   */
+  public void Drive(double x, double y, double z) {
+    speeds[0] = x;
+    speeds[1] = y;
+    speeds[2] = z;
+    // r *= steeringMultiplier;
+    m1 = Range.clip(y + x + z, -1, 1);
+    m2 = Range.clip(y - x - z, -1, 1);
+    m3 = Range.clip(y - x + z, -1, 1);
+    m4 = Range.clip(y + x - z, -1, 1);
+    // gamepad1.rumble((m1 + m3) / 2, (m2 + m4) / 2,
+    // Gamepad.RUMBLE_DURATION_CONTINUOUS);
+    /*
+     * frontLeft.setVelocity(m1);
+     * frontRight.setVelocity(m2);
+     * rearLeft.setVelocity(m3);
+     * rearRight.setVelocity(m4);
+     */
+    frontLeft.setSpeed(m1);
+    frontRight.setSpeed(m2);
+    rearLeft.setSpeed(m3);
+    rearRight.setSpeed(m4);
+
+  }
+
+  /**
+   * Drives the vehicle at a specified factor of the current speeds.
+   *
+   * @param  factor  the factor to multiply the current speeds by
+   */
+  public void Drive(double factor) {
+    Drive(speeds[0] * factor, speeds[1] * factor, speeds[2] * factor);
+  }
+
   public enum LiftStatus {
     RAISED, RAISING, LOWERED, LOWERING
   }
