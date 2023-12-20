@@ -403,7 +403,7 @@ public class CameraTeleop extends OpMode {
         }
         //Do nothing, the camera should be starting
       } catch (Camera.NoTagsFoundException e) {
-        robot.Drive(0.50); //Reduce speed by 50%
+        robot.Drive(0.25); //Reduce speed by 50%
         if (superuser != null) {
           superuser.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
         } else {
