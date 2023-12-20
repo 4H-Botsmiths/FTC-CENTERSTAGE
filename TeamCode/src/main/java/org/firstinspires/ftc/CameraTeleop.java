@@ -234,7 +234,7 @@ public class CameraTeleop extends OpMode {
    * DONE
    */
   enum PixelPosition {
-    NONE, LEFT, CENTER, RIGHT
+    NONE, LEFT, CENTER, RIGHT, UNDECIDED
   }
 
   public PixelPosition getPosition() {
@@ -303,7 +303,7 @@ public class CameraTeleop extends OpMode {
           gamepad1.rumble(0, 0.5, Gamepad.RUMBLE_DURATION_CONTINUOUS);
           break;
       }
-      return PixelPosition.NONE;
+      return PixelPosition.UNDECIDED;
     }
   }
 
@@ -475,6 +475,13 @@ public class CameraTeleop extends OpMode {
           driverLoop();
           operatorLoop();
         }
+      }
+    } else if (position == PixelPosition.UNDECIDED) {
+      if (superuser != null) {
+        superuserLoop(superuser);
+      } else {
+        driverLoop();
+        operatorLoop();
       }
     } else {
       switch (position) {
