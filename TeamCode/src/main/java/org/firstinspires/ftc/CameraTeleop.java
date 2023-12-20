@@ -102,12 +102,15 @@ public class CameraTeleop extends OpMode {
   }
 
   public void driverLoop() {
-    double x = 0.625 * gamepad1.left_stick_x + 0.375 * gamepad1.left_stick_x * gamepad1.right_trigger
-        - 0.375 * gamepad1.left_stick_x * gamepad1.left_trigger;
-    double y = 0.625 * -gamepad1.left_stick_y + 0.375 * -gamepad1.left_stick_y * gamepad1.right_trigger
-        - 0.375 * -gamepad1.left_stick_y * gamepad1.left_trigger;
-    double z = 0.625 * gamepad1.right_stick_x + 0.375 * gamepad1.right_stick_x * gamepad1.right_trigger
-        - 0.375 * gamepad1.right_stick_x * gamepad1.left_trigger;
+    double x = gamepad1.left_stick_x / 3;
+    x += gamepad1.right_bumper ? gamepad1.left_stick_x / 3 : 0;
+    x += gamepad1.left_bumper ? gamepad1.left_stick_x / 3 : 0;
+    double y = -gamepad1.left_stick_y / 3;
+    y += gamepad1.right_bumper ? -gamepad1.left_stick_y / 3 : 0;
+    y += gamepad1.left_bumper ? -gamepad1.left_stick_y / 3 : 0;
+    double z = gamepad1.right_stick_x / 3;
+    z += gamepad1.right_bumper ? gamepad1.right_stick_x / 3 : 0;
+    z += gamepad1.left_bumper ? gamepad1.right_stick_x / 3 : 0;
 
     // robot.Drive System
     robot.Drive(x, y, z);
@@ -131,7 +134,7 @@ public class CameraTeleop extends OpMode {
     } else {
       robot.trapdoor.setPosition(1);
 
-      robot.intake.setSpeed(gamepad2.right_trigger > 0 ? -gamepad2.right_trigger : gamepad2.left_trigger);
+      robot.intake.setSpeed(gamepad2.right_bumper ? 0.5 : gamepad2.left_bumper ? -0.5 : 0);
     }
     if (gamepad2.dpad_up) {
       robot.lift.raise();
@@ -159,12 +162,9 @@ public class CameraTeleop extends OpMode {
   }
 
   public void superuserLoop(Gamepad gamepad) {
-    double x = 0.625 * gamepad.left_stick_x + 0.375 * gamepad.left_stick_x * gamepad.right_trigger
-        - 0.375 * gamepad.left_stick_x * gamepad.left_trigger;
-    double y = 0.625 * -gamepad.left_stick_y + 0.375 * -gamepad.left_stick_y * gamepad.right_trigger
-        - 0.375 * -gamepad.left_stick_y * gamepad.left_trigger;
-    double z = 0.625 * gamepad.right_stick_x + 0.375 * gamepad.right_stick_x * gamepad.right_trigger
-        - 0.375 * gamepad.right_stick_x * gamepad.left_trigger;
+    double x = gamepad1.left_stick_x / 3;
+    double y = -gamepad1.left_stick_y / 3;
+    double z = gamepad1.right_stick_x / 3;
 
     // robot.Drive System
     robot.Drive(x, y, z);
@@ -183,7 +183,7 @@ public class CameraTeleop extends OpMode {
     } else {
       robot.trapdoor.setPosition(1);
 
-      robot.intake.setSpeed(gamepad2.right_trigger > 0 ? -gamepad2.right_trigger : gamepad2.left_trigger);
+      robot.intake.setSpeed(gamepad2.right_bumper ? 0.5 : gamepad2.left_bumper ? -0.5 : 0);
     }
     if (gamepad.dpad_up) {
       robot.lift.raise();
@@ -239,11 +239,11 @@ public class CameraTeleop extends OpMode {
 
   public PixelPosition getPosition() {
     PixelPosition driverChoice = PixelPosition.NONE;
-    if (gamepad1.left_bumper && gamepad1.right_bumper) {
+    if (gamepad1.left_trigger > 0.5 && gamepad1.right_trigger > 0.5) {
       driverChoice = PixelPosition.CENTER;
-    } else if (gamepad1.left_bumper) {
+    } else if (gamepad1.left_trigger > 0.5) {
       driverChoice = PixelPosition.LEFT;
-    } else if (gamepad1.right_bumper) {
+    } else if (gamepad1.right_trigger > 0.5) {
       driverChoice = PixelPosition.RIGHT;
     }
     /*if (gamepad1.x) {
@@ -254,11 +254,11 @@ public class CameraTeleop extends OpMode {
       driverChoice = PixelPosition.RIGHT;
     }*/
     PixelPosition operatorChoice = PixelPosition.NONE;
-    if (gamepad2.left_bumper && gamepad2.right_bumper) {
+    if (gamepad2.left_trigger > 0.5 && gamepad2.right_trigger > 0.5) {
       operatorChoice = PixelPosition.CENTER;
-    } else if (gamepad2.left_bumper) {
+    } else if (gamepad2.left_trigger > 0.5) {
       operatorChoice = PixelPosition.LEFT;
-    } else if (gamepad2.right_bumper) {
+    } else if (gamepad2.right_trigger > 0.5) {
       operatorChoice = PixelPosition.RIGHT;
     }
     /*if (gamepad2.x) {
@@ -309,11 +309,11 @@ public class CameraTeleop extends OpMode {
 
   public PixelPosition getPosition(Gamepad gamepad) {
     PixelPosition superuserChoice = PixelPosition.NONE;
-    if (gamepad.left_bumper && gamepad.right_bumper) {
+    if (gamepad.left_trigger > 0.5 && gamepad.right_trigger > 0.5) {
       superuserChoice = PixelPosition.CENTER;
-    } else if (gamepad.left_bumper) {
+    } else if (gamepad.left_trigger > 0.5) {
       superuserChoice = PixelPosition.LEFT;
-    } else if (gamepad.right_bumper) {
+    } else if (gamepad.right_trigger > 0.5) {
       superuserChoice = PixelPosition.RIGHT;
     }
     if (superuserChoice == PixelPosition.NONE) {
@@ -347,6 +347,7 @@ public class CameraTeleop extends OpMode {
     try {
       camera.resume();
       robot.lift.raise();
+      Gamepad gamepad = superuser == null ? gamepad1 : superuser;
       try {
         List<Camera.AprilTag> tags = camera.getAprilTags();
 
@@ -363,9 +364,11 @@ public class CameraTeleop extends OpMode {
                             currentDetection.ftcPose.yaw > 1 ? -0.1
                                     : currentDetection.ftcPose.yaw < -1 ? 0.1 : 0);
           */
-          robot.Drive(Range.clip(tag.ftcPose.x * sensitivity, -speedLimit, speedLimit),
-              Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
-              Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
+          robot.Drive(Range.clip(tag.ftcPose.x * sensitivity, -speedLimit, speedLimit) + (gamepad.left_stick_x / 3),
+              Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit)
+                  + (-gamepad.left_stick_y / 3),
+              Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit)
+                  + (gamepad.right_stick_x / 3));
         } else {
           for (Camera.AprilTag _tag : tags) {
             if (_tag.position != Camera.AprilTagPosition.CENTER) {
@@ -375,26 +378,33 @@ public class CameraTeleop extends OpMode {
           tag = tag == null ? tags.get(0) : tag;
           switch (position) {
             case LEFT:
-              robot.Drive(tag.position == Camera.AprilTagPosition.CENTER ? -0.2 : -0.3,
-                  Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
-                  Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
+              robot.Drive(
+                  (tag.position == Camera.AprilTagPosition.CENTER ? -0.2 : -0.3) + (gamepad.left_stick_x / 3),
+                  Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit)
+                      + (-gamepad.left_stick_y / 3),
+                  Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit)
+                      + (gamepad.right_stick_x / 3));
               break;
             case RIGHT:
-              robot.Drive(tag.position == Camera.AprilTagPosition.CENTER ? 0.2 : 0.3,
-                  Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
-                  Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
+              robot.Drive((tag.position == Camera.AprilTagPosition.CENTER ? 0.2 : 0.3) + (gamepad.left_stick_x / 3),
+                  Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit)
+                      + (-gamepad.left_stick_y / 3),
+                  Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit)
+                      + (gamepad.right_stick_x / 3));
               break;
             case CENTER:
-              robot.Drive(tag.position == Camera.AprilTagPosition.LEFT ? 0.2 : -0.2,
-                  Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
-                  Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
+              robot.Drive((tag.position == Camera.AprilTagPosition.LEFT ? 0.2 : -0.2) + (gamepad.left_stick_x / 3),
+                  Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit)
+                      + (-gamepad.left_stick_y / 3),
+                  Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit)
+                      + (gamepad.right_stick_x / 3));
               break;
           }
         }
         gamepad1.stopRumble();
         gamepad2.stopRumble();
       } catch (Camera.CameraNotStreamingException e) {
-        robot.Drive(0, 0, 0);
+        robot.Drive(gamepad.left_stick_x / 3, -gamepad.left_stick_y / 3, gamepad.right_stick_x / 3);
         if (superuser != null) {
           superuser.rumble(0.25, 0.25, Gamepad.RUMBLE_DURATION_CONTINUOUS);
         } else {
@@ -403,7 +413,11 @@ public class CameraTeleop extends OpMode {
         }
         //Do nothing, the camera should be starting
       } catch (Camera.NoTagsFoundException e) {
-        robot.Drive(0.25); //Reduce speed by 50%
+        if (gamepad.left_stick_x != 0 || gamepad.left_stick_y != 0 || gamepad.right_stick_x != 0) {
+          robot.Drive(gamepad.left_stick_x / 3, -gamepad.left_stick_y / 3, gamepad.right_stick_x / 3);
+        } else {
+          robot.Drive(0.25); //Reduce speed by 25%
+        }
         if (superuser != null) {
           superuser.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
         } else {
