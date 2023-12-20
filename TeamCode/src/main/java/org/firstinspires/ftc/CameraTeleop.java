@@ -162,9 +162,9 @@ public class CameraTeleop extends OpMode {
   }
 
   public void superuserLoop(Gamepad gamepad) {
-    double x = gamepad1.left_stick_x / 3;
-    double y = -gamepad1.left_stick_y / 3;
-    double z = gamepad1.right_stick_x / 3;
+    double x = gamepad.left_stick_x / 3;
+    double y = -gamepad.left_stick_y / 3;
+    double z = gamepad.right_stick_x / 3;
 
     // robot.Drive System
     robot.Drive(x, y, z);
