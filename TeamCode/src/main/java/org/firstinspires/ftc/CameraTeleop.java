@@ -144,7 +144,7 @@ public class CameraTeleop extends OpMode {
     robot.lift.setSpeed(-gamepad2.left_stick_y * 0.5);
 
     /** 0 = down; 1 = up */
-    robot.leftElbow.setPosition(elbowPosition);
+    robot.leftElbow.setPosition(1 - elbowPosition);
     robot.rightElbow.setPosition(elbowPosition);
     elbowPosition += -gamepad2.right_stick_y * 0.01;
     elbowPosition = elbowPosition > 1 ? 1 : elbowPosition < 0 ? 0 : elbowPosition;
@@ -455,6 +455,7 @@ public class CameraTeleop extends OpMode {
         Math.round(robot.rightRiser.getSpeed() * 100));
     telemetry.addData("Elbow", "Left: %d; Right: %d", Math.round(robot.leftElbow.getPosition() * 100),
         Math.round(robot.rightElbow.getPosition() * 100));
+    telemetry.addData("Elbow Command", Math.round(elbowPosition * 100));
 
     if (gamepad1.a && gamepad1.b && gamepad1.x && gamepad1.y) {
       superuser = gamepad1;
