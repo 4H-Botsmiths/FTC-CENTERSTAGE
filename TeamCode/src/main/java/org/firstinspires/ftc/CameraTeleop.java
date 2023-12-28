@@ -144,8 +144,7 @@ public class CameraTeleop extends OpMode {
     robot.lift.setSpeed(-gamepad2.left_stick_y * 0.5);
 
     /** 0 = down; 1 = up */
-    robot.leftElbow.setPosition(1 - elbowPosition);
-    robot.rightElbow.setPosition(elbowPosition);
+    robot.lift.setPosition(elbowPosition);
     elbowPosition += -gamepad2.right_stick_y * 0.01;
     elbowPosition = elbowPosition > 1 ? 1 : elbowPosition < 0 ? 0 : elbowPosition;
     /*
@@ -193,8 +192,7 @@ public class CameraTeleop extends OpMode {
     robot.lift.setSpeed(gamepad.dpad_left ? -0.5 : gamepad.dpad_right ? 0.5 : 0);
 
     /** 0 = down; 1 = up */
-    robot.leftElbow.setPosition(elbowPosition);
-    robot.rightElbow.setPosition(elbowPosition);
+    robot.lift.setPosition(elbowPosition);
     elbowPosition += -gamepad2.right_stick_y * 0.01;
     elbowPosition = elbowPosition > 1 ? 1 : elbowPosition < 0 ? 0 : elbowPosition;
     /*
@@ -451,10 +449,7 @@ public class CameraTeleop extends OpMode {
 
     telemetry.addData("Intake", Math.round(robot.rearLeft.getSpeed() * 100));
     telemetry.addData("Trapdoor", Math.round(robot.trapdoor.getPosition() * 100));
-    telemetry.addData("Lift", "Left: %d; Right: %d", Math.round(robot.leftRiser.getSpeed() * 100),
-        Math.round(robot.rightRiser.getSpeed() * 100));
-    telemetry.addData("Elbow", "Left: %d; Right: %d", Math.round(robot.leftElbow.getPosition() * 100),
-        Math.round(robot.rightElbow.getPosition() * 100));
+    robot.lift.telemetries(telemetry);
     telemetry.addData("Elbow Command", Math.round(elbowPosition * 100));
 
     if (gamepad1.a && gamepad1.b && gamepad1.x && gamepad1.y) {

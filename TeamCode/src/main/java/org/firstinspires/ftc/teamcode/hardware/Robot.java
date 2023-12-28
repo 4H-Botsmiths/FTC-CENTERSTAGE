@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.util.Range;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.FutureTask;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.classes.DCMotor;
 
 public class Robot {
@@ -27,15 +28,15 @@ public class Robot {
   /** Port 0 */
   public DCMotor intake = null;
   /** Port 2.1 ? */
-  public DCMotor leftRiser = null;
+  private DCMotor leftRiser = null;
   /** Port 2.2 ? */
-  public DCMotor rightRiser = null;
+  private DCMotor rightRiser = null;
   /** Port 0 */
   public Servo trapdoor = null;
   /** Port 1 ?  */
-  public Servo leftElbow = null;
+  private Servo leftElbow = null;
   /** Port 2 ? */
-  public Servo rightElbow = null;
+  private Servo rightElbow = null;
 
   public Lift lift = null;
 
@@ -59,7 +60,7 @@ public class Robot {
     leftElbow.scaleRange(0.25, 0.8);
     rightElbow.scaleRange(0.25, 0.8);
 
-    lift = new Lift(leftRiser, rightRiser);
+    lift = new Lift(leftRiser, rightRiser, leftElbow, rightElbow);
 
     /*CompletableFuture.runAsync(() -> {
       while (true) {
@@ -141,10 +142,14 @@ public class Robot {
   public class Lift {
     DCMotor leftMotor;
     DCMotor rightMotor;
+    Servo leftServo;
+    Servo rightServo;
 
-    public Lift(DCMotor left, DCMotor right) {
-      this.leftMotor = left;
-      this.rightMotor = right;
+    public Lift(DCMotor leftMotor, DCMotor rightMotor, Servo leftServo, Servo rightServo) {
+      this.leftMotor = leftMotor;
+      this.rightMotor = rightMotor;
+      this.leftServo = leftServo;
+      this.rightServo = rightServo;
     }
 
     public void setSpeed(double speed) {
@@ -152,6 +157,11 @@ public class Robot {
         leftMotor.setSpeed(speed);
         rightMotor.setSpeed(speed);
       }
+    }
+
+    public void setPosition(double position) {
+      leftServo.setPosition(1 - position);
+      rightServo.setPosition(position);
     }
 
     public LiftStatus status = LiftStatus.LOWERED;
@@ -261,6 +271,13 @@ public class Robot {
           }
         });
       }
+    }
+
+    public void telemetries(Telemetry telemetry) {
+      telemetry.addData("Lift", "Left: %d; Right: %d", Math.round(leftMotor.getSpeed() * 100),
+          Math.round(rightMotor.getSpeed() * 100));
+      telemetry.addData("Elbow", "Left: %d; Right: %d", Math.round(leftServo.getPosition() * 100),
+          Math.round(rightServo.getPosition() * 100));
     }
   }
 }
