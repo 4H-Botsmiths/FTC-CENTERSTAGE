@@ -117,6 +117,7 @@ public class CameraTeleop extends OpMode {
   }
 
   double elbowPosition = 0;
+  double trapdoorPosition = 0;
 
   public void operatorLoop() {
 
@@ -129,12 +130,20 @@ public class CameraTeleop extends OpMode {
      * > Elbow - right joystick
      */
     if (gamepad2.a) {
-      robot.trapdoor.setPosition(0);
+      robot.trapdoor.setPosition(0.4);
       robot.intake.setSpeed(0.2);
     } else {
-      robot.trapdoor.setPosition(1);
-
-      robot.intake.setSpeed(gamepad2.right_bumper ? 0.5 : gamepad2.left_bumper ? -0.5 : 0);
+      if (gamepad2.right_bumper) {
+        robot.intake.setSpeed(1);
+        robot.trapdoor.setPosition(0.75);
+      } else if (gamepad2.left_bumper) {
+        robot.intake.setSpeed(-0.25);
+        robot.trapdoor.setPosition(1);
+      } else {
+        robot.intake.setSpeed(0);
+        robot.trapdoor.setPosition(1);
+      }
+      //robot.intake.setSpeed(gamepad2.right_bumper ? 1 : gamepad2.left_bumper ? -0.5 : 0);
     }
     if (gamepad2.dpad_up) {
       robot.lift.raise();
@@ -147,6 +156,10 @@ public class CameraTeleop extends OpMode {
     robot.lift.setPosition(elbowPosition);
     elbowPosition += -gamepad2.right_stick_y * 0.01;
     elbowPosition = elbowPosition > 1 ? 1 : elbowPosition < 0 ? 0 : elbowPosition;
+    //Same as above except it should control the trapdoor based off of the right_stick_x
+    /*robot.trapdoor.setPosition(trapdoorPosition);
+    trapdoorPosition += gamepad2.right_stick_x * 0.01;
+    trapdoorPosition = trapdoorPosition > 1 ? 1 : trapdoorPosition < 0 ? 0 : trapdoorPosition;*/
     /*
      * final double lowerLimit = 0.03;
      * final double upperLimit = 0.4;
@@ -176,13 +189,21 @@ public class CameraTeleop extends OpMode {
      * > Lift - left joystick DONE
      * > Elbow - right joystick
      */
-    if (gamepad.a) {
-      robot.trapdoor.setPosition(0);
+    if (gamepad2.a) {
+      robot.trapdoor.setPosition(0.4);
       robot.intake.setSpeed(0.2);
     } else {
-      robot.trapdoor.setPosition(1);
-
-      robot.intake.setSpeed(gamepad2.right_bumper ? 0.5 : gamepad2.left_bumper ? -0.5 : 0);
+      if (gamepad2.right_bumper) {
+        robot.intake.setSpeed(1);
+        robot.trapdoor.setPosition(0.75);
+      } else if (gamepad2.left_bumper) {
+        robot.intake.setSpeed(-0.25);
+        robot.trapdoor.setPosition(1);
+      } else {
+        robot.intake.setSpeed(0);
+        robot.trapdoor.setPosition(1);
+      }
+      //robot.intake.setSpeed(gamepad2.right_bumper ? 1 : gamepad2.left_bumper ? -0.5 : 0);
     }
     if (gamepad.dpad_up) {
       robot.lift.raise();
