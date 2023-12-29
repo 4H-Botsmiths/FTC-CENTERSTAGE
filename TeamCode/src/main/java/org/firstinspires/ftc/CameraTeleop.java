@@ -146,9 +146,9 @@ public class CameraTeleop extends OpMode {
       //robot.intake.setSpeed(gamepad2.right_bumper ? 1 : gamepad2.left_bumper ? -0.5 : 0);
     }
     if (gamepad2.dpad_up) {
-      robot.lift.raise();
+      robot.lift.expand();
     } else if (gamepad2.dpad_down) {
-      robot.lift.lower();
+      robot.lift.constrict();
     }
     robot.lift.setSpeed(-gamepad2.left_stick_y * 0.5);
 
@@ -206,9 +206,9 @@ public class CameraTeleop extends OpMode {
       //robot.intake.setSpeed(gamepad2.right_bumper ? 1 : gamepad2.left_bumper ? -0.5 : 0);
     }
     if (gamepad.dpad_up) {
-      robot.lift.raise();
+      robot.lift.expand();
     } else if (gamepad.dpad_down) {
-      robot.lift.lower();
+      robot.lift.constrict();
     }
     robot.lift.setSpeed(gamepad.dpad_left ? -0.5 : gamepad.dpad_right ? 0.5 : 0);
 
@@ -343,7 +343,7 @@ public class CameraTeleop extends OpMode {
 
   public void reset() {
     robot.Drive(0, 0, 0);
-    robot.lift.lower();
+    robot.lift.constrict();
     robot.intake.setSpeed(0);
     robot.trapdoor.setPosition(0);
     try {
@@ -360,12 +360,12 @@ public class CameraTeleop extends OpMode {
   public final double turnSpeedLimit = 0.1;
 
   /**How far the front of the robot should be from the board */
-  public final double DISTANCE = 7;
+  public final double DISTANCE = 20; //16 final distance?
 
   public void placePixel(Camera.AprilTagPosition position) {
     try {
       camera.resume();
-      robot.lift.raise();
+      robot.lift.expand();
       Gamepad gamepad = superuser == null ? gamepad1 : superuser;
       try {
         List<Camera.AprilTag> tags = camera.getAprilTags();

@@ -168,12 +168,13 @@ public class Robot {
     public LiftStatus status = LiftStatus.LOWERED;
     private ElapsedTime liftClock = new ElapsedTime();
     private final int RAISE_DURATION = 2000;
-    private final int LOWER_DURATION = 1800;
+    private final int LOWER_DURATION = 1500;
 
     private double calcSpeed(double time, double duration) {
       return Range.clip(time < 0.5 * duration ? 1 : (duration - time) / duration, 0, 1);
     }
 
+    @Deprecated //Use `expand()` function instead
     public void raise() {
       if (status == LiftStatus.RAISED || status == LiftStatus.RAISING) {
         return;
@@ -224,6 +225,7 @@ public class Robot {
       }
     }
 
+    @Deprecated //Use `constrict()` function instead
     public void lower() {
       if (status == LiftStatus.LOWERED || status == LiftStatus.LOWERING) {
         return;
@@ -272,6 +274,64 @@ public class Robot {
           }
         });
       }
+    }
+
+    private final double ELBOW_HEIGHT = 0.45;
+
+    public void expand() {
+      if (status != LiftStatus.LOWERED) {
+        return;
+      }
+      status = LiftStatus.RAISING;
+      liftClock.reset();
+      CompletableFuture.runAsync(() -> {
+        while (liftClock.milliseconds() < RAISE_DURATION && status == LiftStatus.RAISING) {
+          double time = liftClock.milliseconds();
+          double speed = calcSpeed(time, RAISE_DURATION);
+          if (time > 0.5 * RAISE_DURATION) {
+            setPosition(ELBOW_HEIGHT);
+          }
+          leftMotor.setSpeed(speed);
+          rightMotor.setSpeed(speed);
+          try {
+            Thread.sleep(20); // Sleep for 20 milliseconds
+          } catch (InterruptedException e) {
+            // Handle interrupted exception
+          }
+        }
+        if (status == LiftStatus.RAISING) {
+          leftMotor.setSpeed(0);
+          rightMotor.setSpeed(0);
+          status = LiftStatus.RAISED;
+        }
+      });
+    }
+
+    public void constrict() {
+      if (status != LiftStatus.RAISED) {
+        return;
+      }
+      status = LiftStatus.LOWERING;
+      liftClock.reset();
+      CompletableFuture.runAsync(() -> {
+        setPosition(0);
+        while (liftClock.milliseconds() < LOWER_DURATION && status == LiftStatus.LOWERING) {
+          double time = liftClock.milliseconds();
+          double speed = -calcSpeed(time, LOWER_DURATION);
+          leftMotor.setSpeed(speed);
+          rightMotor.setSpeed(speed);
+          try {
+            Thread.sleep(20); // Sleep for 20 milliseconds
+          } catch (InterruptedException e) {
+            // Handle interrupted exception
+          }
+        }
+        if (status == LiftStatus.LOWERING) {
+          leftMotor.setSpeed(0);
+          rightMotor.setSpeed(0);
+          status = LiftStatus.LOWERED;
+        }
+      });
     }
 
     public void telemetries(Telemetry telemetry) {
