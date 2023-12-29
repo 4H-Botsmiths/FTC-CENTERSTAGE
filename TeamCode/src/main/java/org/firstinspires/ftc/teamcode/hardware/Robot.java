@@ -192,7 +192,9 @@ public class Robot {
             try {
               Thread.sleep(20); // Sleep for 20 milliseconds
             } catch (InterruptedException e) {
-              // Handle interrupted exception
+              leftMotor.setSpeed(0);
+              rightMotor.setSpeed(0);
+              Thread.currentThread().interrupt();
             }
           }
           if (status == LiftStatus.RAISING) {
@@ -213,7 +215,9 @@ public class Robot {
             try {
               Thread.sleep(20); // Sleep for 20 milliseconds
             } catch (InterruptedException e) {
-              // Handle interrupted exception
+              leftMotor.setSpeed(0);
+              rightMotor.setSpeed(0);
+              Thread.currentThread().interrupt();
             }
           }
           if (status == LiftStatus.RAISING) {
@@ -243,7 +247,9 @@ public class Robot {
             try {
               Thread.sleep(20); // Sleep for 20 milliseconds
             } catch (InterruptedException e) {
-              // Handle interrupted exception
+              leftMotor.setSpeed(0);
+              rightMotor.setSpeed(0);
+              Thread.currentThread().interrupt();
             }
           }
           if (status == LiftStatus.LOWERING) {
@@ -264,7 +270,9 @@ public class Robot {
             try {
               Thread.sleep(20); // Sleep for 20 milliseconds
             } catch (InterruptedException e) {
-              // Handle interrupted exception
+              leftMotor.setSpeed(0);
+              rightMotor.setSpeed(0);
+              Thread.currentThread().interrupt();
             }
           }
           if (status == LiftStatus.LOWERING) {
@@ -296,7 +304,9 @@ public class Robot {
           try {
             Thread.sleep(20); // Sleep for 20 milliseconds
           } catch (InterruptedException e) {
-            // Handle interrupted exception
+            leftMotor.setSpeed(0);
+            rightMotor.setSpeed(0);
+            Thread.currentThread().interrupt();
           }
         }
         if (status == LiftStatus.RAISING) {
@@ -323,7 +333,9 @@ public class Robot {
           try {
             Thread.sleep(20); // Sleep for 20 milliseconds
           } catch (InterruptedException e) {
-            // Handle interrupted exception
+            leftMotor.setSpeed(0);
+            rightMotor.setSpeed(0);
+            Thread.currentThread().interrupt();
           }
         }
         if (status == LiftStatus.LOWERING) {
