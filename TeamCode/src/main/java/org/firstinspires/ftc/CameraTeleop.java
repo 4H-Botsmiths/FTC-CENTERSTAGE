@@ -404,8 +404,8 @@ public class CameraTeleop extends OpMode {
           if (ready) {
             robot.trapdoor.setPosition(0.4);
             robot.intake.setSpeed(0.5);
-            forwardSpeed = Range.clip((tag.ftcPose.range - (FINAL_DISTANCE - (sensitivity
-                / pressureSpeed))) * sensitivity, -precisionSpeedLimit,
+            forwardSpeed = Range.clip(((tag.ftcPose.range - FINAL_DISTANCE) * sensitivity) + pressureSpeed,
+                -precisionSpeedLimit,
                 precisionSpeedLimit);
             telemetry.addLine("Placing");
             if (!spokePlacing) {
