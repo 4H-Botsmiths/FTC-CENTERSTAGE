@@ -529,6 +529,11 @@ public class CameraTeleop extends OpMode {
     } else if (gamepad1.b && gamepad2.b) {
       superuser = null;
     }
+    handleLoop();
+    camera.telemetryAprilTag();
+  }
+
+  public void handleLoop() {
 
     PixelPosition position = superuser != null ? getPosition(superuser) : getPosition();
     if (position == PixelPosition.NONE) {
@@ -568,7 +573,6 @@ public class CameraTeleop extends OpMode {
       //lastTask = placePixel(position);
     }
     lastPosition = position;
-    camera.telemetryAprilTag();
   }
 
   /*
