@@ -103,7 +103,7 @@ public class Camera {
           try {
             Thread.sleep(100);
           } catch (InterruptedException e) {
-            //Do nothing
+            Thread.currentThread().interrupt();
           }
         }
         visionPortal.stopStreaming();
