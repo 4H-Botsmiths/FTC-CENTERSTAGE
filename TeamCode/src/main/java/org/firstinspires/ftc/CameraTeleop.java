@@ -363,7 +363,7 @@ public class CameraTeleop extends OpMode {
   public final double pressureSpeed = 0.1;
 
   public final double tolerance = 5;
-  public final double precisionTolerance = 1;
+  public final double precisionTolerance = 1.5;
 
   /**How far the front of the robot should be from the board */
   public final double DISTANCE = 10; //6 final distance?
