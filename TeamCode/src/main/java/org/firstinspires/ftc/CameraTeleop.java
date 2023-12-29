@@ -355,7 +355,7 @@ public class CameraTeleop extends OpMode {
 
   // degrees are more sensitive than inches, so they need finer control
   public final double turnSensitivity = 0.05;
-  public final double sensitivity = 0.075;
+  public final double sensitivity = 0.1;
   public final double speedLimit = 0.2;
   public final double turnSpeedLimit = 0.1;
   public final double precisionSpeedLimit = 0.15;
@@ -366,6 +366,10 @@ public class CameraTeleop extends OpMode {
   /**How far the front of the robot should be from the board */
   public final double DISTANCE = 10; //6 final distance?
   public final double FINAL_DISTANCE = 6;
+
+  public boolean spokeAligning = false;
+  public boolean spokeApproaching = false;
+  public boolean spokePlacing = false;
 
   public void placePixel(Camera.AprilTagPosition position) {
     try {
@@ -398,14 +402,34 @@ public class CameraTeleop extends OpMode {
           if (ready) {
             robot.trapdoor.setPosition(0.4);
             robot.intake.setSpeed(0.5);
-            forwardSpeed = pressureSpeed;
+            forwardSpeed = Range.clip((tag.ftcPose.range - (FINAL_DISTANCE - (sensitivity
+                / pressureSpeed))) * sensitivity, -precisionSpeedLimit,
+                precisionSpeedLimit);
             telemetry.addLine("Placing");
+            if (!spokePlacing) {
+              telemetry.speak("Placing");
+              spokePlacing = true;
+            }
+            spokeAligning = false;
+            spokeApproaching = false;
           } else if (aligned) {
             forwardSpeed = Range.clip((tag.ftcPose.range - FINAL_DISTANCE) * sensitivity, -precisionSpeedLimit,
                 precisionSpeedLimit);
             telemetry.addLine("Approaching");
+            if (!spokeApproaching) {
+              telemetry.speak("Approaching");
+              spokeApproaching = true;
+            }
+            spokeAligning = false;
+            spokePlacing = false;
           } else {
             telemetry.addLine("Aligning");
+            if (!spokeAligning) {
+              telemetry.speak("Aligning");
+              spokeAligning = true;
+            }
+            spokePlacing = false;
+            spokeApproaching = false;
           }
           robot.Drive(Range.clip(tag.ftcPose.x * sensitivity, -speedLimit, speedLimit) + (gamepad.left_stick_x / 3),
               forwardSpeed + (-gamepad.left_stick_y / 3),
