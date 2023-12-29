@@ -355,13 +355,14 @@ public class CameraTeleop extends OpMode {
 
   // degrees are more sensitive than inches, so they need finer control
   public final double turnSensitivity = 0.05;
-  public final double sensitivity = 0.1;
+  public final double sensitivity = 0.075;
   public final double speedLimit = 0.2;
   public final double turnSpeedLimit = 0.1;
   public final double precisionSpeedLimit = 0.15;
   public final double pressureSpeed = 0.1;
 
-  public final double tolerance = 1;
+  public final double tolerance = 5;
+  public final double precisionTolerance = 1;
 
   /**How far the front of the robot should be from the board */
   public final double DISTANCE = 10; //6 final distance?
@@ -395,9 +396,9 @@ public class CameraTeleop extends OpMode {
           boolean aligned = tag.ftcPose.x < tolerance && tag.ftcPose.x > -tolerance
               && tag.ftcPose.range < DISTANCE + tolerance
               && tag.ftcPose.yaw < tolerance && tag.ftcPose.yaw > -tolerance;
-          boolean ready = tag.ftcPose.x < tolerance && tag.ftcPose.x > -tolerance
-              && tag.ftcPose.range < FINAL_DISTANCE + tolerance
-              && tag.ftcPose.yaw < tolerance && tag.ftcPose.yaw > -tolerance;
+          boolean ready = tag.ftcPose.x < precisionTolerance && tag.ftcPose.x > -precisionTolerance
+              && tag.ftcPose.range < FINAL_DISTANCE + precisionTolerance
+              && tag.ftcPose.yaw < precisionTolerance && tag.ftcPose.yaw > -precisionTolerance;
           double forwardSpeed = Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit);
           if (ready) {
             robot.trapdoor.setPosition(0.4);
