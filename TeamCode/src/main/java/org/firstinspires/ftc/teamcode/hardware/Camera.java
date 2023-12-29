@@ -212,11 +212,17 @@ public class Camera {
       //AprilTagDetection​(int id, int hamming, float decisionMargin, org.opencv.core.Point center, org.opencv.core.Point[] corners, AprilTagMetadata metadata, AprilTagPoseFtc ftcPose, AprilTagPoseRaw rawPose, long frameAcquisitionNanoTime)
       super(detection.id, detection.hamming, detection.decisionMargin, detection.center, detection.corners,
           detection.metadata,
-          new AprilTagPoseFtc(detection.ftcPose.x - 0.6, detection.ftcPose.y, detection.ftcPose.z,
-              detection.ftcPose.yaw + 1.87,
-              detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.range - 9.8, detection.ftcPose.bearing,
-              detection.ftcPose.elevation),
+          detection.metadata != null
+              ? new AprilTagPoseFtc(detection.ftcPose.x - 0.6, detection.ftcPose.y, detection.ftcPose.z,
+                  detection.ftcPose.yaw + 1.87,
+                  detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.range - 9.8,
+                  detection.ftcPose.bearing,
+                  detection.ftcPose.elevation)
+              : new AprilTagPoseFtc(0, 0, 0, 0, 0, 0, 0, 0, 0),
           detection.rawPose, detection.frameAcquisitionNanoTime);
+      if (detection.metadata == null) {
+        throw new IllegalStateException(String.format("Detection with ID: %d has no metadata", detection.id));
+      }
       if (detection.id == 1 || detection.id == 4) {
         position = AprilTagPosition.LEFT;
       }
