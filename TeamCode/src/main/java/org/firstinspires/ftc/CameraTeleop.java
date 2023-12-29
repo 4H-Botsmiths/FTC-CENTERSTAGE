@@ -355,10 +355,11 @@ public class CameraTeleop extends OpMode {
 
   // degrees are more sensitive than inches, so they need finer control
   public final double turnSensitivity = 0.05;
-  public final double sensitivity = 0.075;
-  public final double speedLimit = 0.2;
+  public final double sensitivity = 0.1;
+  public final double speedLimit = 0.15;
   public final double turnSpeedLimit = 0.1;
   public final double precisionSpeedLimit = 0.15;
+
   public final double pressureSpeed = 0.1;
 
   public final double tolerance = 5;
