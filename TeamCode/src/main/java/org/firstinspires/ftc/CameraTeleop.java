@@ -358,8 +358,8 @@ public class CameraTeleop extends OpMode {
   public final double sensitivity = 0.075;
   public final double speedLimit = 0.2;
   public final double turnSpeedLimit = 0.1;
-  public final double precisionSpeedLimit = 0.075;
-  public final double pressureSpeed = 0.05;
+  public final double precisionSpeedLimit = 0.15;
+  public final double pressureSpeed = 0.1;
 
   public final double tolerance = 1;
 
@@ -389,19 +389,23 @@ public class CameraTeleop extends OpMode {
                                     : currentDetection.ftcPose.yaw < -1 ? 0.1 : 0);
           */
           boolean aligned = tag.ftcPose.x < tolerance && tag.ftcPose.x > -tolerance
-              && tag.ftcPose.range < DISTANCE
+              && tag.ftcPose.range < DISTANCE + tolerance
               && tag.ftcPose.yaw < tolerance && tag.ftcPose.yaw > -tolerance;
           boolean ready = tag.ftcPose.x < tolerance && tag.ftcPose.x > -tolerance
-              && tag.ftcPose.range < FINAL_DISTANCE
+              && tag.ftcPose.range < FINAL_DISTANCE + tolerance
               && tag.ftcPose.yaw < tolerance && tag.ftcPose.yaw > -tolerance;
           double forwardSpeed = Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit);
           if (ready) {
             robot.trapdoor.setPosition(0.4);
             robot.intake.setSpeed(0.5);
             forwardSpeed = pressureSpeed;
+            telemetry.addLine("Placing");
           } else if (aligned) {
             forwardSpeed = Range.clip((tag.ftcPose.range - FINAL_DISTANCE) * sensitivity, -precisionSpeedLimit,
                 precisionSpeedLimit);
+            telemetry.addLine("Approaching");
+          } else {
+            telemetry.addLine("Aligning");
           }
           robot.Drive(Range.clip(tag.ftcPose.x * sensitivity, -speedLimit, speedLimit) + (gamepad.left_stick_x / 3),
               forwardSpeed + (-gamepad.left_stick_y / 3),
