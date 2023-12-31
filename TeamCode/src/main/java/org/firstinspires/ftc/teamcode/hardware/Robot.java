@@ -164,7 +164,7 @@ public class Robot {
     }
 
     public void grab() {
-      setPosition(0.3);
+      setPosition(0.25);
       motor.setSpeed(1);
     }
 
