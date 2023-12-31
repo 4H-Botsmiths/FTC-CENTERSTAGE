@@ -144,7 +144,7 @@ public class Robot {
     Servo servo;
 
     public void setPosition(double position) {
-      position = Range.scale(position, 0, 1, 0.5, 0.8);
+      position = Range.scale(position, 0, 1, 0.2, 0.5);
       servo.setPosition(position);
     }
 
@@ -331,7 +331,7 @@ public class Robot {
       }
     }
 
-    private final double ELBOW_HEIGHT = 0.45;
+    private final double ELBOW_HEIGHT = 1;
 
     public void expand() {
       if (status != LiftStatus.LOWERED) {
