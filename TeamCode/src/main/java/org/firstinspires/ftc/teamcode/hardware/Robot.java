@@ -331,8 +331,6 @@ public class Robot {
       }
     }
 
-    private final double ELBOW_HEIGHT = 1;
-
     public void expand() {
       if (status != LiftStatus.LOWERED) {
         return;
@@ -344,7 +342,7 @@ public class Robot {
           double time = liftClock.milliseconds();
           double speed = calcSpeed(time, RAISE_DURATION);
           if (time > 0.5 * RAISE_DURATION) {
-            setPosition(ELBOW_HEIGHT);
+            setPosition(1);
           }
           leftMotor.setSpeed(speed);
           rightMotor.setSpeed(speed);
@@ -363,6 +361,9 @@ public class Robot {
         }
       });
     }
+
+    /**How long to raise the lift after lowering (to reduce ground friction) */
+    private final int POPUP_DURATION = 75;
 
     public void constrict() {
       if (status != LiftStatus.RAISED) {
@@ -389,7 +390,7 @@ public class Robot {
           leftMotor.setSpeed(0.5);
           rightMotor.setSpeed(0.5);
           try {
-            Thread.sleep(100); // Sleep for 20 milliseconds
+            Thread.sleep(POPUP_DURATION);
           } catch (InterruptedException e) {
             leftMotor.setSpeed(0);
             rightMotor.setSpeed(0);
