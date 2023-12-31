@@ -207,15 +207,15 @@ public class Robot {
     }
 
     public void setPosition(double position) {
-      position = Range.scale(position, 0, 1, 0.05, 0.3);
+      position = Range.scale(position, 0, 1, 0.01, 0.3);
       leftServo.setPosition(position);
       rightServo.setPosition(position);
     }
 
     public LiftStatus status = LiftStatus.LOWERED;
     private ElapsedTime liftClock = new ElapsedTime();
-    private final int RAISE_DURATION = 1750;
-    private final int LOWER_DURATION = 1500;
+    private final int RAISE_DURATION = 1500;
+    private final int LOWER_DURATION = 1250;
 
     private double calcSpeed(double time, double duration) {
       return Range.clip(time < 0.5 * duration ? 1 : (duration - time) / duration, 0, 1);
