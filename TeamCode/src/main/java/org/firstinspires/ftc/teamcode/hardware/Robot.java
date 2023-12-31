@@ -207,7 +207,7 @@ public class Robot {
     }
 
     public void setPosition(double position) {
-      position = Range.scale(position, 0, 1, 0, 0.3);
+      position = Range.scale(position, 0, 1, 0.05, 0.3);
       leftServo.setPosition(position);
       rightServo.setPosition(position);
     }
@@ -386,9 +386,20 @@ public class Robot {
           }
         }
         if (status == LiftStatus.LOWERING) {
-          leftMotor.setSpeed(0);
-          rightMotor.setSpeed(0);
-          status = LiftStatus.LOWERED;
+          leftMotor.setSpeed(0.5);
+          rightMotor.setSpeed(0.5);
+          try {
+            Thread.sleep(100); // Sleep for 20 milliseconds
+          } catch (InterruptedException e) {
+            leftMotor.setSpeed(0);
+            rightMotor.setSpeed(0);
+            Thread.currentThread().interrupt();
+          }
+          if (status == LiftStatus.LOWERING) {
+            leftMotor.setSpeed(0);
+            rightMotor.setSpeed(0);
+            status = LiftStatus.LOWERED;
+          }
         }
       });
     }
