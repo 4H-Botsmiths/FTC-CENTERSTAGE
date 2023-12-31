@@ -117,9 +117,15 @@ public class CameraTeleop extends OpMode {
   }
 
   double elbowPosition = 0;
-  double trapdoorPosition = 0;
+  //double trapdoorPosition = 0.5;
 
   public void operatorLoop() {
+    if (gamepad2.y) {
+      //robot.lift.constrict();
+      robot.lift.setSpeed(-30);
+    } else {
+      robot.lift.setSpeed(-gamepad2.left_stick_y * 0.5);
+    }
 
     /*
      * NOTES:
@@ -130,18 +136,14 @@ public class CameraTeleop extends OpMode {
      * > Elbow - right joystick
      */
     if (gamepad2.a) {
-      robot.trapdoor.setPosition(0.4);
-      robot.intake.setSpeed(0.2);
+      robot.intake.drop();
     } else {
       if (gamepad2.right_bumper) {
-        robot.intake.setSpeed(1);
-        robot.trapdoor.setPosition(0.75);
+        robot.intake.grab();
       } else if (gamepad2.left_bumper) {
-        robot.intake.setSpeed(-0.25);
-        robot.trapdoor.setPosition(1);
+        robot.intake.eject();
       } else {
-        robot.intake.setSpeed(0);
-        robot.trapdoor.setPosition(1);
+        robot.intake.hold();
       }
       //robot.intake.setSpeed(gamepad2.right_bumper ? 1 : gamepad2.left_bumper ? -0.5 : 0);
     }
@@ -150,7 +152,6 @@ public class CameraTeleop extends OpMode {
     } else if (gamepad2.dpad_down) {
       robot.lift.constrict();
     }
-    robot.lift.setSpeed(-gamepad2.left_stick_y * 0.5);
 
     /** 0 = down; 1 = up */
     robot.lift.setPosition(elbowPosition);
@@ -189,19 +190,15 @@ public class CameraTeleop extends OpMode {
      * > Lift - left joystick DONE
      * > Elbow - right joystick
      */
-    if (gamepad2.a) {
-      robot.trapdoor.setPosition(0.4);
-      robot.intake.setSpeed(0.2);
+    if (gamepad.a) {
+      robot.intake.drop();
     } else {
-      if (gamepad2.right_bumper) {
-        robot.intake.setSpeed(1);
-        robot.trapdoor.setPosition(0.75);
-      } else if (gamepad2.left_bumper) {
-        robot.intake.setSpeed(-0.25);
-        robot.trapdoor.setPosition(1);
+      if (gamepad.right_bumper) {
+        robot.intake.grab();
+      } else if (gamepad.left_bumper) {
+        robot.intake.eject();
       } else {
-        robot.intake.setSpeed(0);
-        robot.trapdoor.setPosition(1);
+        robot.intake.hold();
       }
       //robot.intake.setSpeed(gamepad2.right_bumper ? 1 : gamepad2.left_bumper ? -0.5 : 0);
     }
@@ -210,7 +207,6 @@ public class CameraTeleop extends OpMode {
     } else if (gamepad.dpad_down) {
       robot.lift.constrict();
     }
-    robot.lift.setSpeed(gamepad.dpad_left ? -0.5 : gamepad.dpad_right ? 0.5 : 0);
 
     /** 0 = down; 1 = up */
     robot.lift.setPosition(elbowPosition);
@@ -227,6 +223,11 @@ public class CameraTeleop extends OpMode {
      * robot.leftElbow.setPosition(-gamepad2.right_stick_y);
      * robot.rightElbow.setPosition(1 + gamepad2.right_stick_y);
      */
+    if (gamepad.y) {
+      robot.lift.setSpeed(-30);
+    } else {
+      robot.lift.setSpeed(gamepad.dpad_left ? -0.5 : gamepad.dpad_right ? 0.5 : 0);
+    }
   }
 
   /*
@@ -344,8 +345,7 @@ public class CameraTeleop extends OpMode {
   public void reset() {
     robot.Drive(0, 0, 0);
     robot.lift.constrict();
-    robot.intake.setSpeed(0);
-    robot.trapdoor.setPosition(0);
+    robot.intake.hold();
     try {
       camera.pause();
     } catch (Camera.CameraNotAttachedException e) {
@@ -355,7 +355,7 @@ public class CameraTeleop extends OpMode {
 
   // degrees are more sensitive than inches, so they need finer control
   public final double turnSensitivity = 0.05;
-  public final double sensitivity = 0.1;
+  public final double sensitivity = 0.075;
   public final double speedLimit = 0.15;
   public final double turnSpeedLimit = 0.1;
   public final double precisionSpeedLimit = 0.15;
@@ -402,8 +402,7 @@ public class CameraTeleop extends OpMode {
               && tag.ftcPose.yaw < precisionTolerance && tag.ftcPose.yaw > -precisionTolerance;
           double forwardSpeed = Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit);
           if (ready) {
-            robot.trapdoor.setPosition(0.4);
-            robot.intake.setSpeed(0.5);
+            robot.intake.drop();
             forwardSpeed = Range.clip(((tag.ftcPose.range - FINAL_DISTANCE) * sensitivity) + pressureSpeed,
                 -precisionSpeedLimit,
                 precisionSpeedLimit);
@@ -517,8 +516,7 @@ public class CameraTeleop extends OpMode {
     telemetry.addData("Rear Right", Math.round(robot.rearRight.getSpeed() * 100));
     telemetry.addData("Rear Left", Math.round(robot.rearLeft.getSpeed() * 100));
 
-    telemetry.addData("Intake", Math.round(robot.rearLeft.getSpeed() * 100));
-    telemetry.addData("Trapdoor", Math.round(robot.trapdoor.getPosition() * 100));
+    robot.intake.telemetries(telemetry);
     robot.lift.telemetries(telemetry);
     telemetry.addData("Elbow Command", Math.round(elbowPosition * 100));
 

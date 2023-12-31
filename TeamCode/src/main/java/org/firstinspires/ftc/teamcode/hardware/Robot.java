@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
+import com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import java.util.concurrent.CompletableFuture;
@@ -26,19 +27,20 @@ public class Robot {
   public DCMotor rearRight = null;
 
   /** Port 0 */
-  public DCMotor intake = null;
+  private DCMotor intakeSpinner = null;
   /** Port 2.1 ? */
   private DCMotor leftRiser = null;
   /** Port 2.2 ? */
   private DCMotor rightRiser = null;
   /** Port 0 */
-  public Servo trapdoor = null;
+  private Servo trapdoor = null;
   /** Port 1 ?  */
   private Servo leftElbow = null;
   /** Port 2 ? */
   private Servo rightElbow = null;
 
   public Lift lift = null;
+  public Intake intake = null;
 
   public Robot(HardwareMap hardwareMap) {
     voltage = hardwareMap.get(VoltageSensor.class, "Control Hub");
@@ -48,20 +50,21 @@ public class Robot {
     rearLeft = new DCMotor(hardwareMap.get(DcMotorEx.class, "RearLeft"));
     rearRight = new DCMotor(hardwareMap.get(DcMotorEx.class, "RearRight"));
 
-    intake = new DCMotor(hardwareMap.get(DcMotorEx.class, "Intake"), DcMotor.Direction.REVERSE);
+    intakeSpinner = new DCMotor(hardwareMap.get(DcMotorEx.class, "Intake"), DcMotor.Direction.REVERSE);
     leftRiser = new DCMotor(hardwareMap.get(DcMotorEx.class, "LeftRiser"));
     rightRiser = new DCMotor(hardwareMap.get(DcMotorEx.class, "RightRiser"), DcMotor.Direction.REVERSE);
     trapdoor = hardwareMap.get(Servo.class, "Trapdoor");
-    trapdoor.scaleRange(0.35, 0.75);
-    //trapdoor.setDirection(Servo.Direction.REVERSE);
+    trapdoor.setDirection(Servo.Direction.REVERSE);
+    trapdoor.scaleRange(0.5, 0.8);
 
     leftElbow = hardwareMap.get(Servo.class, "LeftElbow");
     rightElbow = hardwareMap.get(Servo.class, "RightElbow");
-    //    rightElbow.setDirection(Servo.Direction.REVERSE);
-    leftElbow.scaleRange(0.2, 0.8);
-    rightElbow.scaleRange(0.2, 0.8);
+    leftElbow.setDirection(Servo.Direction.REVERSE);
+    // leftElbow.scaleRange(0.7, 1);
+    //rightElbow.scaleRange(0, 0.3);
 
     lift = new Lift(leftRiser, rightRiser, leftElbow, rightElbow);
+    intake = new Intake(intakeSpinner, trapdoor);
 
     /*CompletableFuture.runAsync(() -> {
       while (true) {
@@ -136,6 +139,47 @@ public class Robot {
     rearRight.setSpeed(m4);
   }
 
+  public class Intake {
+    DCMotor motor;
+    Servo servo;
+
+    public void setPosition(double position) {
+      position = Range.scale(position, 0, 1, 0.5, 0.8);
+      servo.setPosition(position);
+    }
+
+    public Intake(DCMotor motor, Servo servo) {
+      this.motor = motor;
+      this.servo = servo;
+    }
+
+    public void hold() {
+      setPosition(0);
+      motor.setSpeed(0);
+    }
+
+    public void drop() {
+      setPosition(1);
+      motor.setSpeed(0.2);
+    }
+
+    public void grab() {
+      setPosition(0.2);
+      motor.setSpeed(1);
+    }
+
+    public void eject() {
+      setPosition(0);
+      motor.setSpeed(-1);
+    }
+
+    public void telemetries(Telemetry telemetry) {
+      telemetry.addData("Intake", Math.round(motor.getSpeed() * 100));
+      telemetry.addData("Trapdoor", Math.round(servo.getPosition() * 100));
+    }
+
+  }
+
   public enum LiftStatus {
     RAISED, RAISING, LOWERED, LOWERING
   }
@@ -151,6 +195,8 @@ public class Robot {
       this.rightMotor = rightMotor;
       this.leftServo = leftServo;
       this.rightServo = rightServo;
+      leftMotor.motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+      rightMotor.motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     public void setSpeed(double speed) {
@@ -161,13 +207,14 @@ public class Robot {
     }
 
     public void setPosition(double position) {
-      leftServo.setPosition(1 - position);
+      position = Range.scale(position, 0, 1, 0, 0.3);
+      leftServo.setPosition(position);
       rightServo.setPosition(position);
     }
 
     public LiftStatus status = LiftStatus.LOWERED;
     private ElapsedTime liftClock = new ElapsedTime();
-    private final int RAISE_DURATION = 2000;
+    private final int RAISE_DURATION = 1750;
     private final int LOWER_DURATION = 1500;
 
     private double calcSpeed(double time, double duration) {
@@ -353,4 +400,5 @@ public class Robot {
           Math.round(rightServo.getPosition() * 100));
     }
   }
+
 }
