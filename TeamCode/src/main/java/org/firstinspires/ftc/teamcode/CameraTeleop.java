@@ -482,11 +482,11 @@ public class CameraTeleop extends OpMode {
         }
         //Do nothing, the camera should be starting
       } catch (Camera.NoTagsFoundException e) {
-        if (gamepad.left_stick_x != 0 || gamepad.left_stick_y != 0 || gamepad.right_stick_x != 0) {
-          robot.Drive(gamepad.left_stick_x / 3, -gamepad.left_stick_y / 3, gamepad.right_stick_x / 3);
-        } else {
-          robot.Drive(0.25); //Reduce speed by 25%
-        }
+        // if (gamepad.left_stick_x != 0 || gamepad.left_stick_y != 0 || gamepad.right_stick_x != 0) {
+        robot.Drive(gamepad.left_stick_x / 3, -gamepad.left_stick_y / 3, gamepad.right_stick_x / 3);
+        //} else {
+        // robot.Drive(0.25); //Reduce speed by 25%
+        //}
         if (superuser != null) {
           superuser.rumble(1, 1, Gamepad.RUMBLE_DURATION_CONTINUOUS);
         } else {
