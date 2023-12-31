@@ -414,6 +414,7 @@ public class CameraTeleop extends OpMode {
             spokeAligning = false;
             spokeApproaching = false;
           } else if (aligned) {
+            robot.intake.hold();
             forwardSpeed = Range.clip((tag.ftcPose.range - FINAL_DISTANCE) * sensitivity, -precisionSpeedLimit,
                 precisionSpeedLimit);
             telemetry.addLine("Approaching");
@@ -424,6 +425,7 @@ public class CameraTeleop extends OpMode {
             spokeAligning = false;
             spokePlacing = false;
           } else {
+            robot.intake.hold();
             telemetry.addLine("Aligning");
             if (!spokeAligning) {
               telemetry.speak("Aligning");
