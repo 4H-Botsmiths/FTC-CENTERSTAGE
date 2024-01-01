@@ -38,7 +38,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
  * Station OpMode list
  */
 
-@TeleOp(name = "Camera Teleop", group = "B")
+@TeleOp(name = "Camera Teleop", group = "A")
 // @Disabled
 public class CameraTeleop extends OpMode {
   // Declare OpMode members.

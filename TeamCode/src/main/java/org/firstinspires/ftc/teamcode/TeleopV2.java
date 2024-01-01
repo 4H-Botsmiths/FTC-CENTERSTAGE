@@ -32,7 +32,7 @@ import com.qualcomm.robotcore.util.Range;
  */
 
 @TeleOp(name = "Teleop V2", group = "A")
-// @Disabled
+@Disabled //For legacy purposes only
 public class TeleopV2 extends OpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
