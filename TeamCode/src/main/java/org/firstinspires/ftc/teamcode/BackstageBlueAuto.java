@@ -150,4 +150,71 @@ public class BackstageBlueAuto extends LinearOpMode {
     }
   }
 
+  public void align(AprilTagPosition position) {
+    telemetry.speak("Aligning");
+    while (opModeIsActive()) {
+      try {
+        List<Camera.AprilTag> tags = camera.getAprilTags();
+
+        Camera.AprilTag tag = null;
+        for (Camera.AprilTag _tag : tags) {
+          if (_tag.position == position) {
+            tag = _tag;
+          }
+        }
+        if (tag != null) {
+          /* Old algorithm:
+          robot.Drive(currentDetection.ftcPose.x > 1 ? 0.1 : currentDetection.ftcPose.x < -1 ? -0.1 : 0,
+                            currentDetection.ftcPose.range > 20 ? 0.1 : currentDetection.ftcPose.range < 18 ? -0.1 : 0,
+                            currentDetection.ftcPose.yaw > 1 ? -0.1
+                                    : currentDetection.ftcPose.yaw < -1 ? 0.1 : 0);
+          */
+          if (tag.ftcPose.x < tolerance && tag.ftcPose.x > -tolerance
+              && tag.ftcPose.range < DISTANCE + tolerance
+              && tag.ftcPose.yaw < tolerance && tag.ftcPose.yaw > -tolerance) {
+            return;
+          }
+          robot.intake.hold();
+          telemetry.addLine("Aligning");
+          robot.Drive(Range.clip(tag.ftcPose.x * sensitivity, -speedLimit, speedLimit),
+              Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
+              Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
+        } else {
+          for (Camera.AprilTag _tag : tags) {
+            if (_tag.position != Camera.AprilTagPosition.CENTER) {
+              tag = _tag;
+            }
+          }
+          tag = tag == null ? tags.get(0) : tag;
+          switch (position) {
+            case LEFT:
+              robot.Drive(
+                  (tag.position == Camera.AprilTagPosition.CENTER ? -0.2 : -0.3),
+                  Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
+                  Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
+              break;
+            case RIGHT:
+              robot.Drive((tag.position == Camera.AprilTagPosition.CENTER ? 0.2 : 0.3),
+                  Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
+                  Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
+              break;
+            case CENTER:
+              robot.Drive((tag.position == Camera.AprilTagPosition.LEFT ? 0.2 : -0.2),
+                  Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
+                  Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
+              break;
+            default:
+              robot.Drive(0, 0, 0);
+          }
+        }
+      } catch (Camera.CameraNotStreamingException e) {
+
+        //Do nothing, the camera should be starting
+      } catch (Camera.NoTagsFoundException e) {
+      } catch (Camera.CameraNotAttachedException e) {
+        //Function can't run
+        telemetry.speak("Camera is not attached");
+      }
+    }
+  }
 }
