@@ -62,7 +62,7 @@ public class CameraTeleop extends OpMode {
     try {
       camera.initAprilTag();
     } catch (Camera.CameraNotAttachedException e) {
-      //TODO: How should this be handled?
+      telemetry.speak("Warning: Camera is not attached");
     }
 
     // Most robots need the motor on one side to be reversed to drive forward
@@ -354,8 +354,8 @@ public class CameraTeleop extends OpMode {
   }
 
   // degrees are more sensitive than inches, so they need finer control
-  public final double turnSensitivity = 0.05;
-  public final double sensitivity = 0.075;
+  public final double turnSensitivity = 0.025;
+  public final double sensitivity = 0.05;
   public final double speedLimit = 0.15;
   public final double turnSpeedLimit = 0.1;
   public final double precisionSpeedLimit = 0.15;
