@@ -124,9 +124,9 @@ public class BackstageBlueAuto extends LinearOpMode {
 
   public void initTelemetries() {
     telemetry.addData("Status", "Waiting for start");
-    telemetry.addData("Delaying", delay);
-    telemetry.addData("Position", position);
-    telemetry.addData("Parking Location", parkingLocation);
+    telemetry.addData("Delaying (A/B)", delay);
+    telemetry.addData("Position (Dpad Left/Up/Right)", position);
+    telemetry.addData("Parking Location (Left/Right Bumpers)", parkingLocation);
     telemetry.update();
   }
 
@@ -163,18 +163,11 @@ public class BackstageBlueAuto extends LinearOpMode {
           }
         }
         if (tag != null) {
-          /* Old algorithm:
-          robot.Drive(currentDetection.ftcPose.x > 1 ? 0.1 : currentDetection.ftcPose.x < -1 ? -0.1 : 0,
-                            currentDetection.ftcPose.range > 20 ? 0.1 : currentDetection.ftcPose.range < 18 ? -0.1 : 0,
-                            currentDetection.ftcPose.yaw > 1 ? -0.1
-                                    : currentDetection.ftcPose.yaw < -1 ? 0.1 : 0);
-          */
           if (tag.ftcPose.x < tolerance && tag.ftcPose.x > -tolerance
               && tag.ftcPose.range < DISTANCE + tolerance
               && tag.ftcPose.yaw < tolerance && tag.ftcPose.yaw > -tolerance) {
             return;
           }
-          robot.intake.hold();
           telemetry.addLine("Aligning");
           robot.Drive(Range.clip(tag.ftcPose.x * sensitivity, -speedLimit, speedLimit),
               Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
@@ -208,12 +201,92 @@ public class BackstageBlueAuto extends LinearOpMode {
           }
         }
       } catch (Camera.CameraNotStreamingException e) {
-
         //Do nothing, the camera should be starting
       } catch (Camera.NoTagsFoundException e) {
+        robot.Drive(0, 0, 0);
       } catch (Camera.CameraNotAttachedException e) {
         //Function can't run
         telemetry.speak("Camera is not attached");
+        return;
+      }
+    }
+  }
+
+  public void approach(AprilTagPosition position) {
+    telemetry.speak("Approaching");
+    while (opModeIsActive()) {
+      try {
+        List<Camera.AprilTag> tags = camera.getAprilTags();
+
+        Camera.AprilTag tag = null;
+        for (Camera.AprilTag _tag : tags) {
+          if (_tag.position == position) {
+            tag = _tag;
+          }
+        }
+        if (tag != null) {
+          if (tag.ftcPose.x < precisionTolerance && tag.ftcPose.x > -precisionTolerance
+              && tag.ftcPose.range < FINAL_DISTANCE + precisionTolerance
+              && tag.ftcPose.yaw < precisionTolerance && tag.ftcPose.yaw > -precisionTolerance) {
+            return;
+          }
+          telemetry.addLine("Approaching");
+          robot.Drive(Range.clip(tag.ftcPose.x * sensitivity, -precisionSpeedLimit, precisionSpeedLimit),
+              Range.clip(((tag.ftcPose.range - FINAL_DISTANCE) * sensitivity) + pressureSpeed, -precisionSpeedLimit,
+                  precisionSpeedLimit),
+              Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
+        } else {
+          align(position);
+        }
+      } catch (Camera.CameraNotStreamingException e) {
+        //Do nothing, the camera should be starting
+      } catch (Camera.NoTagsFoundException e) {
+        robot.Drive(0, 0, 0);
+      } catch (Camera.CameraNotAttachedException e) {
+        //Function can't run
+        telemetry.speak("Camera is not attached");
+        return;
+      }
+    }
+  }
+
+  ElapsedTime timer = new ElapsedTime();
+
+  public void place(AprilTagPosition position) {
+    timer.reset();
+    telemetry.speak("Placing");
+    while (opModeIsActive() && timer.milliseconds() < PLACE_DURATION) {
+      try {
+        List<Camera.AprilTag> tags = camera.getAprilTags();
+
+        Camera.AprilTag tag = null;
+        for (Camera.AprilTag _tag : tags) {
+          if (_tag.position == position) {
+            tag = _tag;
+          }
+        }
+        if (tag != null) {
+          if (tag.ftcPose.x < precisionTolerance && tag.ftcPose.x > -precisionTolerance
+              && tag.ftcPose.range < FINAL_DISTANCE + precisionTolerance
+              && tag.ftcPose.yaw < precisionTolerance && tag.ftcPose.yaw > -precisionTolerance) {
+            return;
+          }
+          telemetry.addLine("Placing");
+          robot.Drive(Range.clip(tag.ftcPose.x * sensitivity, -precisionSpeedLimit, precisionSpeedLimit),
+              Range.clip(((tag.ftcPose.range - FINAL_DISTANCE) * sensitivity) + pressureSpeed, -precisionSpeedLimit,
+                  precisionSpeedLimit),
+              Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
+        } else {
+          approach(position);
+        }
+      } catch (Camera.CameraNotStreamingException e) {
+        //Do nothing, the camera should be starting
+      } catch (Camera.NoTagsFoundException e) {
+        robot.Drive(0, 0, 0);
+      } catch (Camera.CameraNotAttachedException e) {
+        //Function can't run
+        telemetry.speak("Camera is not attached");
+        return;
       }
     }
   }
