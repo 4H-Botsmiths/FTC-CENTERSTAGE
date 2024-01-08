@@ -59,7 +59,7 @@ public class Robot {
 
     leftElbow = hardwareMap.get(Servo.class, "LeftElbow");
     rightElbow = hardwareMap.get(Servo.class, "RightElbow");
-    leftElbow.setDirection(Servo.Direction.REVERSE);
+    rightElbow.setDirection(Servo.Direction.REVERSE);
     // leftElbow.scaleRange(0.7, 1);
     //rightElbow.scaleRange(0, 0.3);
 
@@ -155,7 +155,7 @@ public class Robot {
 
     public void hold() {
       setPosition(0);
-      motor.setSpeed(0);
+      motor.setSpeed(0.5);
     }
 
     public void drop() {
@@ -207,7 +207,7 @@ public class Robot {
     }
 
     public void setPosition(double position) {
-      position = Range.scale(position, 0, 1, 0.01, 0.3);
+      position = Range.scale(position, 0, 1, 0.1, 1);
       leftServo.setPosition(position);
       rightServo.setPosition(position);
     }
