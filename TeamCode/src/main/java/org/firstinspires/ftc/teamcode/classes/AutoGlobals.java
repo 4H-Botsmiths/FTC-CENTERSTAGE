@@ -29,4 +29,7 @@ public class AutoGlobals {
   /**How far the front of the robot should be from the board */
   public final static double DISTANCE = 10; //6 final distance?
   public final static double FINAL_DISTANCE = 6;
+
+  /** How far should the robot be from the side of the board before pulling forward to park */
+  public final static double PARKING_X_DISTANCE = 3;
 }

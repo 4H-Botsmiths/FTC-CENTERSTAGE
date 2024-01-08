@@ -73,7 +73,7 @@ public class BackstageBlueAuto extends LinearOpMode {
   */
 
   public boolean delay = false;
-  public AprilTagPosition position = AprilTagPosition.CENTER;
+  public AprilTagPosition placingPosition = AprilTagPosition.CENTER;
   public ParkingLocation parkingLocation = ParkingLocation.LEFT;
 
   enum ParkingLocation {
@@ -106,17 +106,24 @@ public class BackstageBlueAuto extends LinearOpMode {
     sleep(STRAFE_DURATION);
     robot.Drive(0, 0, 0);
     robot.lift.expand();
-    align(position);
-    approach(position);
-    place(position);
+    align(placingPosition);
+    approach(placingPosition);
+    place(placingPosition);
     robot.Drive(0, -0.2, 0);
     telemetry.speak("Backing up");
     sleep(BACKUP_DURATION);
-    robot.Drive(-0.1, 0, 0);
-    telemetry.speak("Strafing");
-    sleep(PARKING_STRAFE_DURATION);
+    if (parkingLocation == ParkingLocation.LEFT) {
+      robot.Drive(-0.1, 0, 0);
+      telemetry.speak("Parking left");
+      sleep(PARKING_STRAFE_DURATION);
+    } else {
+      telemetry.speak("Parking right");
+      prepareParkRight();
+    }
+    robot.lift.constrict();
+    telemetry.speak("Compressing Lift");
     robot.Drive(0, 0.1, 0);
-    telemetry.speak("Parking");
+    telemetry.speak("Approaching Wall");
     sleep(PARKING_DURATION);
     robot.Drive(0, 0, 0);
     telemetry.speak("Done");
@@ -125,7 +132,7 @@ public class BackstageBlueAuto extends LinearOpMode {
   public void initTelemetries() {
     telemetry.addData("Status", "Waiting for start");
     telemetry.addData("Delaying (A/B)", delay);
-    telemetry.addData("Position (Dpad Left/Up/Right)", position);
+    telemetry.addData("Placement Position (Dpad Left/Up/Right)", placingPosition);
     telemetry.addData("Parking Location (Left/Right Bumpers)", parkingLocation);
     telemetry.update();
   }
@@ -137,11 +144,11 @@ public class BackstageBlueAuto extends LinearOpMode {
       parkingLocation = ParkingLocation.RIGHT;
     }
     if (gamepad1.dpad_up || gamepad2.dpad_up) {
-      position = AprilTagPosition.CENTER;
+      placingPosition = AprilTagPosition.CENTER;
     } else if (gamepad1.dpad_left || gamepad2.dpad_left) {
-      position = AprilTagPosition.LEFT;
+      placingPosition = AprilTagPosition.LEFT;
     } else if (gamepad1.dpad_right || gamepad2.dpad_right) {
-      position = AprilTagPosition.RIGHT;
+      placingPosition = AprilTagPosition.RIGHT;
     }
     if (gamepad1.a || gamepad2.a) {
       delay = true;
@@ -278,6 +285,49 @@ public class BackstageBlueAuto extends LinearOpMode {
               Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
         } else {
           approach(position);
+        }
+      } catch (Camera.CameraNotStreamingException e) {
+        //Do nothing, the camera should be starting
+      } catch (Camera.NoTagsFoundException e) {
+        robot.Drive(0, 0, 0);
+      } catch (Camera.CameraNotAttachedException e) {
+        //Function can't run
+        telemetry.speak("Camera is not attached");
+        return;
+      }
+    }
+  }
+
+  public void prepareParkRight() {
+    while (opModeIsActive()) {
+      try {
+        List<Camera.AprilTag> tags = camera.getAprilTags();
+
+        Camera.AprilTag tag = null;
+        for (Camera.AprilTag _tag : tags) {
+          if (_tag.position == Camera.AprilTagPosition.RIGHT) {
+            tag = _tag;
+          }
+        }
+        if (tag != null) {
+          if (tag.ftcPose.x + PARKING_X_DISTANCE < tolerance && tag.ftcPose.x + PARKING_X_DISTANCE > -tolerance
+              && tag.ftcPose.range < DISTANCE + tolerance
+              && tag.ftcPose.yaw < tolerance && tag.ftcPose.yaw > -tolerance) {
+            return;
+          }
+          robot.Drive(Range.clip(tag.ftcPose.x + PARKING_X_DISTANCE * sensitivity, -speedLimit, speedLimit),
+              Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
+              Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
+        } else {
+          for (Camera.AprilTag _tag : tags) {
+            if (_tag.position != Camera.AprilTagPosition.CENTER) {
+              tag = _tag;
+            }
+          }
+          tag = tag == null ? tags.get(0) : tag;
+          robot.Drive((tag.position == Camera.AprilTagPosition.CENTER ? 0.2 : 0.3),
+              Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
+              Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
         }
       } catch (Camera.CameraNotStreamingException e) {
         //Do nothing, the camera should be starting
