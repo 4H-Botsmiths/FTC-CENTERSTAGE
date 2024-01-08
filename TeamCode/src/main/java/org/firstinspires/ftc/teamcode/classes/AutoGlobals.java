@@ -32,4 +32,9 @@ public class AutoGlobals {
 
   /** How far should the robot be from the side of the board before pulling forward to park */
   public final static double PARKING_X_DISTANCE = 3;
+
+  /** How long the robot should strafe for to get to the center of the field  */
+  public final static int ONSTAGE_STRAFE_DURATION = 1000;
+  /** How long the robot should drive forward to get backstage */
+  public final static int ONSTAGE_DRIVE_DURATION = 1000;
 }
