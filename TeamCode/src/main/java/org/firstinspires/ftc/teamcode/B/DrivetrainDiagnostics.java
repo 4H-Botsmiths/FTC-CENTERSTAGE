@@ -1,10 +1,10 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
-@TeleOp(name = "Drivetrain Diagnostics", group = "B")
+@Autonomous(name = "Drivetrain Diagnostics", group = "B")
 public class DrivetrainDiagnostics extends LinearOpMode {
 
   public DcMotorEx frontLeft = null;
