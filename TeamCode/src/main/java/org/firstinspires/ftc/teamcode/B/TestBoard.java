@@ -32,7 +32,7 @@ import com.qualcomm.robotcore.util.Range;
  * Station OpMode list
  */
 
-@TeleOp(name = "TestBoard", group = "C")
+@TeleOp(name = "TestBoard", group = "B")
 // @Disabled
 public class TestBoard extends OpMode {
   // Declare OpMode members.
