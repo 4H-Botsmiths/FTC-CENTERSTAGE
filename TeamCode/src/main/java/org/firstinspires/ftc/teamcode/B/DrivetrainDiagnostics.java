@@ -33,7 +33,7 @@ public class DrivetrainDiagnostics extends LinearOpMode {
     frontRight = hardwareMap.get(DcMotorEx.class, "FrontRight");
     rearLeft = hardwareMap.get(DcMotorEx.class, "RearLeft");
     rearRight = hardwareMap.get(DcMotorEx.class, "RearRight");
-    telemetry.addData("Status", "Initialized -  Raise Robot Off The Ground Then Hit Start");
+    telemetry.addData("Status", "Initialized -  Raise Robot Off The Ground, Then Hit Start");
     telemetry.update();
     waitForStart();
     telemetry.addData("Status", "Testing Motors...");
