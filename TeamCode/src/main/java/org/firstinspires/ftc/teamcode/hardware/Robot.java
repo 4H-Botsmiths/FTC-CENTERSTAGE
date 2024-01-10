@@ -214,11 +214,18 @@ public class Robot {
 
     public LiftStatus status = LiftStatus.LOWERED;
     private ElapsedTime liftClock = new ElapsedTime();
-    private final int RAISE_DURATION = 1500;
-    private final int LOWER_DURATION = 1250;
+    private final int RAISE_DURATION = 1000; //Was 1500 - decreased for security until new speed curve tested
+    private final int LOWER_DURATION = 750;//Was 1250 - decreased for security until new speed curve tested
 
     private double calcSpeed(double time, double duration) {
-      return Range.clip(time < 0.5 * duration ? 1 : (duration - time) / duration, 0, 1);
+      if (time < 0.25 * duration) {
+        return Range.clip(time / duration * 0.5, 0, 1);
+      } else if (time > 0.75 * duration) {
+        return Range.clip((duration - time) / duration * 0.5, 0, 1);
+      } else {
+        return 1;
+      }
+      //Old method: return Range.clip(time < 0.5 * duration ? 1 : (duration - time) / duration, 0, 1);
     }
 
     @Deprecated //Use `expand()` function instead
