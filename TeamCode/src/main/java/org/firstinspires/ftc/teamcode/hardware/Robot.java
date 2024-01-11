@@ -39,9 +39,12 @@ public class Robot {
   private Servo leftElbow = null;
   /** Port 2 ? */
   private Servo rightElbow = null;
+  /** Port 6 */
+  private Servo launcher = null;
 
   public Lift lift = null;
   public Intake intake = null;
+  public Drone drone = null;
 
   public Robot(HardwareMap hardwareMap) {
     voltage = hardwareMap.get(VoltageSensor.class, "Control Hub");
@@ -64,8 +67,11 @@ public class Robot {
     // leftElbow.scaleRange(0.7, 1);
     //rightElbow.scaleRange(0, 0.3);
 
+    launcher = hardwareMap.get(Servo.class, "Launcher");
+
     lift = new Lift(leftRiser, rightRiser, leftElbow, rightElbow);
     intake = new Intake(intakeSpinner, trapdoor);
+    drone = new Drone(launcher);
 
     /*CompletableFuture.runAsync(() -> {
       while (true) {
@@ -138,6 +144,27 @@ public class Robot {
     frontRight.setSpeed(m2);
     rearLeft.setSpeed(m3);
     rearRight.setSpeed(m4);
+  }
+
+  public class Drone {
+    Servo servo;
+
+    public Drone(Servo servo) {
+      this.servo = servo;
+    }
+
+    public void setPosition(double position) {
+      position = Range.scale(position, 0, 1, 0.2, 0.5);
+      servo.setPosition(position);
+    }
+
+    public void hold() {
+      setPosition(0);
+    }
+
+    public void launch() {
+      setPosition(1);
+    }
   }
 
   public class Intake {
