@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@TeleOp(name = "Drivetrain Diagnostics", group = "B")
+@TeleOp(name = "Servo Calibrator", group = "B")
 public class ServoCalibrator extends LinearOpMode {
 
   public Servo leftElbow = null;
@@ -19,7 +19,6 @@ public class ServoCalibrator extends LinearOpMode {
 
   @Override
   public void runOpMode() {
-    telemetry.setAutoClear(false);
     telemetry.addData("Status", "Initializing...");
     telemetry.update();
     leftElbow = hardwareMap.get(Servo.class, "LeftElbow");
@@ -39,18 +38,18 @@ public class ServoCalibrator extends LinearOpMode {
   public double elbowPosition = 0.5;
 
   public void updateElbow() {
-    elbowPosition += -(gamepad1.right_stick_y + gamepad2.right_stick_y) * 0.01;
+    elbowPosition += -(gamepad1.right_stick_y + gamepad2.right_stick_y) * 0.001;
     elbowPosition = elbowPosition > 1 ? 1 : elbowPosition < 0 ? 0 : elbowPosition;
     leftElbow.setPosition(elbowPosition);
     rightElbow.setPosition(elbowPosition);
-    telemetry.addData("Elbow", "Left: %i; Right: %i", Math.round(leftElbow.getPosition() * 100),
+    telemetry.addData("Elbow", "Left: %d; Right: %d", Math.round(leftElbow.getPosition() * 100),
         Math.round(rightElbow.getPosition() * 100));
   }
 
   public double trapdoorPosition = 0.5;
 
   public void updateTrapdoor() {
-    trapdoorPosition += -(gamepad1.left_stick_y + gamepad2.left_stick_y) * 0.01;
+    trapdoorPosition += -(gamepad1.left_stick_y + gamepad2.left_stick_y) * 0.001;
     trapdoorPosition = trapdoorPosition > 1 ? 1 : trapdoorPosition < 0 ? 0 : trapdoorPosition;
     trapdoor.setPosition(trapdoorPosition);
     telemetry.addData("Trapdoor", Math.round(trapdoor.getPosition() * 100));
