@@ -20,6 +20,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
+//!AIRPLANE: 0.2 = up; 0.5 = down;
 /**
  * This file contains an example of an iterative (Non-Linear) "OpMode".
  * An OpMode is a 'program' that runs in either the autonomous or the teleop
@@ -155,7 +156,7 @@ public class CameraTeleop extends OpMode {
 
     /** 0 = down; 1 = up */
     robot.lift.setPosition(elbowPosition);
-    elbowPosition += -gamepad2.right_stick_y * 0.01;
+    elbowPosition += -gamepad2.right_stick_y * 0.001;
     elbowPosition = elbowPosition > 1 ? 1 : elbowPosition < 0 ? 0 : elbowPosition;
     //Same as above except it should control the trapdoor based off of the right_stick_x
     /*robot.trapdoor.setPosition(trapdoorPosition);
@@ -210,7 +211,7 @@ public class CameraTeleop extends OpMode {
 
     /** 0 = down; 1 = up */
     robot.lift.setPosition(elbowPosition);
-    elbowPosition += -gamepad2.right_stick_y * 0.01;
+    elbowPosition += -gamepad.right_stick_y * 0.001;
     elbowPosition = elbowPosition > 1 ? 1 : elbowPosition < 0 ? 0 : elbowPosition;
     /*
      * final double lowerLimit = 0.03;
@@ -439,6 +440,7 @@ public class CameraTeleop extends OpMode {
               Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit)
                   + (gamepad.right_stick_x / 3));
         } else {
+          robot.intake.hold();
           for (Camera.AprilTag _tag : tags) {
             if (_tag.position != Camera.AprilTagPosition.CENTER) {
               tag = _tag;
@@ -473,6 +475,7 @@ public class CameraTeleop extends OpMode {
         gamepad1.stopRumble();
         gamepad2.stopRumble();
       } catch (Camera.CameraNotStreamingException e) {
+        robot.intake.hold();
         robot.Drive(gamepad.left_stick_x / 3, -gamepad.left_stick_y / 3, gamepad.right_stick_x / 3);
         if (superuser != null) {
           superuser.rumble(0.25, 0.25, Gamepad.RUMBLE_DURATION_CONTINUOUS);
@@ -482,6 +485,7 @@ public class CameraTeleop extends OpMode {
         }
         //Do nothing, the camera should be starting
       } catch (Camera.NoTagsFoundException e) {
+        robot.intake.hold();
         // if (gamepad.left_stick_x != 0 || gamepad.left_stick_y != 0 || gamepad.right_stick_x != 0) {
         robot.Drive(gamepad.left_stick_x / 3, -gamepad.left_stick_y / 3, gamepad.right_stick_x / 3);
         //} else {
