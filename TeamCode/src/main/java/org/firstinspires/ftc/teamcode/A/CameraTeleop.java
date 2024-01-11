@@ -543,6 +543,7 @@ public class CameraTeleop extends OpMode {
       superuser = null;
     }
     handleLoop();
+    handleAirplane();
     camera.telemetryAprilTag();
   }
 
@@ -586,6 +587,20 @@ public class CameraTeleop extends OpMode {
       //lastTask = placePixel(position);
     }
     lastPosition = position;
+  }
+
+  public void handleAirplane() {
+    if (superuser != null) {
+      if (superuser.x) {
+        robot.drone.launch();
+      } else {
+        robot.drone.hold();
+      }
+    } else if (gamepad1.x && gamepad2.x) {
+      robot.drone.launch();
+    } else {
+      robot.drone.hold();
+    }
   }
 
   /*
