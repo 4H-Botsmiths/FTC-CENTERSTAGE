@@ -527,10 +527,19 @@ public class CameraTeleop extends OpMode {
     telemetry.addData("Elbow Command", Math.round(elbowPosition * 100));
 
     if (gamepad1.a && gamepad1.b && gamepad1.x && gamepad1.y) {
+      if (superuser != gamepad1) {
+        telemetry.speak("Enabling Superuser For Gamepad 1");
+      }
       superuser = gamepad1;
     } else if (gamepad2.a && gamepad2.b && gamepad2.x && gamepad2.y) {
+      if (superuser != gamepad2) {
+        telemetry.speak("Enabling Superuser For Gamepad 2");
+      }
       superuser = gamepad2;
     } else if (gamepad1.b && gamepad2.b) {
+      if (superuser != null) {
+        telemetry.speak("Disabling Superuser");
+      }
       superuser = null;
     }
     handleLoop();
