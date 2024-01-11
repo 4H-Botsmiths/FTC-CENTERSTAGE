@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @Autonomous(name = "Drivetrain Diagnostics", group = "B")
 public class DrivetrainDiagnostics extends LinearOpMode {
@@ -23,27 +24,30 @@ public class DrivetrainDiagnostics extends LinearOpMode {
   @Override
   public void runOpMode() {
     telemetry.setAutoClear(false);
-    telemetry.addData("Status", "Initializing...");
-    telemetry.addData("Front Left", "Waiting...");
-    telemetry.addData("Front Right", "Waiting...");
-    telemetry.addData("Rear Left", "Waiting...");
-    telemetry.addData("Rear Right", "Waiting...");
+    Telemetry.Item statusItem = telemetry.addData("Status", "Initializing...");
+    Telemetry.Item frontLeftItem = telemetry.addData("Front Left", "Waiting...");
+    Telemetry.Item frontRightItem = telemetry.addData("Front Right", "Waiting...");
+    Telemetry.Item rearLeftItem = telemetry.addData("Rear Left", "Waiting...");
+    Telemetry.Item rearRightITem = telemetry.addData("Rear Right", "Waiting...");
     telemetry.update();
     frontLeft = hardwareMap.get(DcMotorEx.class, "FrontLeft");
     frontRight = hardwareMap.get(DcMotorEx.class, "FrontRight");
     rearLeft = hardwareMap.get(DcMotorEx.class, "RearLeft");
     rearRight = hardwareMap.get(DcMotorEx.class, "RearRight");
-    telemetry.addData("Status", "Initialized -  Raise Robot Off The Ground, Then Hit Start");
+    statusItem.setValue("Initialized -  Raise Robot Off The Ground, Then Hit Start");
     telemetry.update();
     waitForStart();
-    telemetry.addData("Status", "Testing Motors...");
-    evaluateMotor(frontLeft, "Front Left");
-    evaluateMotor(frontRight, "Front Right");
-    evaluateMotor(rearLeft, "Rear Left");
-    evaluateMotor(rearRight, "Rear Right");
+    statusItem.setValue("Testing Motors...");
+    evaluateMotor(frontLeft, frontLeftItem);
+    evaluateMotor(frontRight, frontRightItem);
+    evaluateMotor(rearLeft, rearLeftItem);
+    evaluateMotor(rearRight, rearRightITem);
     resetMotors();
-    telemetry.addData("Status", "Done, See Below For Test Results");
+    statusItem.setValue("Done, See Below For Test Results");
     telemetry.update();
+    while (opModeIsActive()) {
+      sleep(100);
+    }
   }
 
   public void resetMotors() {
@@ -78,20 +82,20 @@ public class DrivetrainDiagnostics extends LinearOpMode {
     }
   }
 
-  public void evaluateMotor(DcMotorEx motor, String motorName) {
-    telemetry.addData(motorName, "Testing...");
+  public void evaluateMotor(DcMotorEx motor, Telemetry.Item telemetryItem) {
+    telemetryItem.setValue("Testing...");
     telemetry.update();
     resetMotors();
     motor.setPower(1);
     sleep(RUN_DURATION);
     DcMotorEx activeMotor = getActiveMotor();
     if (activeMotor == null) {
-      telemetry.addData(motorName, "Encoder Error");
+      telemetryItem.setValue("Encoder Error");
     } else if (activeMotor != motor) {
-      telemetry.addData(motorName, "Encoder Mismatch, Encoder Connected To Port %i, should be %i",
+      telemetryItem.setValue("Encoder Mismatch, Encoder Connected To Port %d, should be %d",
           activeMotor.getPortNumber(), motor.getPortNumber());
     } else {
-      telemetry.addData(motorName, "Encoder Functioning (Velocity: %.0f)", motor.getVelocity());
+      telemetryItem.setValue("Encoder Functioning (Velocity: %.0f)", motor.getVelocity());
     }
     telemetry.update();
   }
