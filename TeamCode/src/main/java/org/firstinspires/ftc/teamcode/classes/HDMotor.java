@@ -27,12 +27,13 @@ public class HDMotor {
   }
 
   private final int TICKS_PER_ROTATION = 3124;// 28;
+  private final int MAX_VELOCITY = 2000; //Actually higher, but this will ensure consistency
 
   public void setSpeed(double speed) {
-    this.motor.setVelocity(speed * TICKS_PER_ROTATION);
+    this.motor.setVelocity(speed * MAX_VELOCITY);
   }
 
   public double getSpeed() {
-    return this.motor.getVelocity() / TICKS_PER_ROTATION;
+    return this.motor.getVelocity() / MAX_VELOCITY;
   }
 }
