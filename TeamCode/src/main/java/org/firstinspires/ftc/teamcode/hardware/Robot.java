@@ -13,18 +13,19 @@ import java.util.concurrent.FutureTask;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.classes.DCMotor;
+import org.firstinspires.ftc.teamcode.classes.HDMotor;
 
 public class Robot {
   public VoltageSensor voltage = null;
 
   /** Port 2.0 ? */
-  public DCMotor frontLeft = null;
+  public HDMotor frontLeft = null;
   /** Port 1 */
-  public DCMotor frontRight = null;
+  public HDMotor frontRight = null;
   /** Port 2 */
-  public DCMotor rearLeft = null;
+  public HDMotor rearLeft = null;
   /** Port 3 */
-  public DCMotor rearRight = null;
+  public HDMotor rearRight = null;
 
   /** Port 0 */
   private DCMotor intakeSpinner = null;
@@ -45,10 +46,10 @@ public class Robot {
   public Robot(HardwareMap hardwareMap) {
     voltage = hardwareMap.get(VoltageSensor.class, "Control Hub");
 
-    frontLeft = new DCMotor(hardwareMap.get(DcMotorEx.class, "FrontLeft"));
-    frontRight = new DCMotor(hardwareMap.get(DcMotorEx.class, "FrontRight"), DcMotor.Direction.REVERSE);
-    rearLeft = new DCMotor(hardwareMap.get(DcMotorEx.class, "RearLeft"));
-    rearRight = new DCMotor(hardwareMap.get(DcMotorEx.class, "RearRight"));
+    frontLeft = new HDMotor(hardwareMap.get(DcMotorEx.class, "FrontLeft"));
+    frontRight = new HDMotor(hardwareMap.get(DcMotorEx.class, "FrontRight"), DcMotor.Direction.REVERSE);
+    rearLeft = new HDMotor(hardwareMap.get(DcMotorEx.class, "RearLeft"));
+    rearRight = new HDMotor(hardwareMap.get(DcMotorEx.class, "RearRight"));
 
     intakeSpinner = new DCMotor(hardwareMap.get(DcMotorEx.class, "Intake"), DcMotor.Direction.REVERSE);
     leftRiser = new DCMotor(hardwareMap.get(DcMotorEx.class, "LeftRiser"));
@@ -144,7 +145,7 @@ public class Robot {
     Servo servo;
 
     public void setPosition(double position) {
-      position = Range.scale(position, 0, 1, 0.2, 0.5);
+      position = Range.scale(position, 0, 1, 0.1, 0.5);
       servo.setPosition(position);
     }
 
@@ -155,7 +156,7 @@ public class Robot {
 
     public void hold() {
       setPosition(0);
-      motor.setSpeed(0.5);
+      motor.setSpeed(0);
     }
 
     public void drop() {
@@ -207,21 +208,21 @@ public class Robot {
     }
 
     public void setPosition(double position) {
-      position = Range.scale(position, 0, 1, 0.1, 1);
+      position = Range.scale(position, 0, 1, 0.1, 0.9);
       leftServo.setPosition(position);
       rightServo.setPosition(position);
     }
 
     public LiftStatus status = LiftStatus.LOWERED;
     private ElapsedTime liftClock = new ElapsedTime();
-    private final int RAISE_DURATION = 1000; //Was 1500 - decreased for security until new speed curve tested
-    private final int LOWER_DURATION = 750;//Was 1250 - decreased for security until new speed curve tested
+    private final int RAISE_DURATION = 2000; //Was 1500 - decreased for security until new speed curve tested
+    private final int LOWER_DURATION = 1500;//Was 1250 - decreased for security until new speed curve tested
 
     private double calcSpeed(double time, double duration) {
-      if (time < 0.25 * duration) {
-        return Range.clip(time / duration * 0.5, 0, 1);
-      } else if (time > 0.75 * duration) {
-        return Range.clip((duration - time) / duration * 0.5, 0, 1);
+      if (time < 0.4 * duration) {
+        return Range.clip(time / (duration * 0.5), 0, 1);
+      } else if (time > 0.6 * duration) {
+        return Range.clip((duration - time) / (duration * 0.5), 0, 1);
       } else {
         return 1;
       }
