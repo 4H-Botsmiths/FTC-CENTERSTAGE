@@ -97,7 +97,7 @@ public class CameraTeleop extends OpMode {
     try {
       camera.pause();
     } catch (Camera.CameraNotAttachedException e) {
-      //Do Nothing
+      telemetry.speak("Warning: Camera is not attached");
     }
     runtime.reset();
   }
@@ -350,7 +350,7 @@ public class CameraTeleop extends OpMode {
     try {
       camera.pause();
     } catch (Camera.CameraNotAttachedException e) {
-      //Do Nothing
+      telemetry.speak("Warning: Camera is not attached");
     }
   }
 
