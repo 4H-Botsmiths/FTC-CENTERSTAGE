@@ -104,13 +104,16 @@ public class CameraTeleop extends OpMode {
 
   public void driverLoop() {
     double x = gamepad1.left_stick_x / 3;
-    x += gamepad1.right_bumper ? gamepad1.left_stick_x / 3 : 0;
+    x *= 2;
+    x -= gamepad1.right_bumper ? gamepad1.left_stick_x / 3 : 0;
     x += gamepad1.left_bumper ? gamepad1.left_stick_x / 3 : 0;
     double y = -gamepad1.left_stick_y / 3;
-    y += gamepad1.right_bumper ? -gamepad1.left_stick_y / 3 : 0;
+    y *= 2;
+    y -= gamepad1.right_bumper ? -gamepad1.left_stick_y / 3 : 0;
     y += gamepad1.left_bumper ? -gamepad1.left_stick_y / 3 : 0;
     double z = gamepad1.right_stick_x / 3;
-    z += gamepad1.right_bumper ? gamepad1.right_stick_x / 3 : 0;
+    z *= 2;
+    z -= gamepad1.right_bumper ? gamepad1.right_stick_x / 3 : 0;
     z += gamepad1.left_bumper ? gamepad1.right_stick_x / 3 : 0;
 
     // robot.Drive System
@@ -140,8 +143,10 @@ public class CameraTeleop extends OpMode {
       robot.intake.drop();
     } else {
       if (gamepad2.right_bumper) {
+        robot.lift.setPosition(0);
         robot.intake.grab();
       } else if (gamepad2.left_bumper) {
+        robot.lift.setPosition(0.3);
         robot.intake.eject();
       } else {
         robot.intake.hold();
@@ -155,9 +160,10 @@ public class CameraTeleop extends OpMode {
     }
 
     /** 0 = down; 1 = up */
-    robot.lift.setPosition(elbowPosition);
+    robot.lift.nudge(-gamepad2.right_stick_y * 0.01);
+    /*robot.lift.setPosition(elbowPosition);
     elbowPosition += -gamepad2.right_stick_y * 0.01;
-    elbowPosition = elbowPosition > 1 ? 1 : elbowPosition < 0 ? 0 : elbowPosition;
+    elbowPosition = elbowPosition > 1 ? 1 : elbowPosition < 0 ? 0 : elbowPosition;*/
     //Same as above except it should control the trapdoor based off of the right_stick_x
     /*robot.trapdoor.setPosition(trapdoorPosition);
     trapdoorPosition += gamepad2.right_stick_x * 0.01;
