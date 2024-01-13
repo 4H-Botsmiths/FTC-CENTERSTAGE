@@ -234,10 +234,17 @@ public class Robot {
       }
     }
 
+    double lastPosition = 0;
+
     public void setPosition(double position) {
-      position = Range.scale(position, 0, 1, 0.1, 0.9);
+      lastPosition = position;
+      position = Range.scale(position, 0, 1, 0, 0.9);
       leftServo.setPosition(position);
       rightServo.setPosition(position);
+    }
+
+    public void nudge(double nudge) {
+      setPosition(lastPosition + nudge);
     }
 
     public LiftStatus status = LiftStatus.LOWERED;
@@ -376,7 +383,7 @@ public class Robot {
         while (liftClock.milliseconds() < RAISE_DURATION && status == LiftStatus.RAISING) {
           double time = liftClock.milliseconds();
           double speed = calcSpeed(time, RAISE_DURATION);
-          if (time > 0.5 * RAISE_DURATION) {
+          if (time > 0.25 * RAISE_DURATION) {
             setPosition(1);
           }
           leftMotor.setSpeed(speed);
@@ -407,7 +414,7 @@ public class Robot {
       status = LiftStatus.LOWERING;
       liftClock.reset();
       CompletableFuture.runAsync(() -> {
-        setPosition(0);
+        setPosition(0.1);
         while (liftClock.milliseconds() < LOWER_DURATION && status == LiftStatus.LOWERING) {
           double time = liftClock.milliseconds();
           double speed = -calcSpeed(time, LOWER_DURATION);
