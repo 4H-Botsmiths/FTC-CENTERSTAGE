@@ -51,7 +51,7 @@ import static org.firstinspires.ftc.teamcode.classes.AutoGlobals.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-@Autonomous(name = "Backstage Blue", group = "B")
+@Autonomous(name = "Backstage Blue", group = "B", preselectTeleOp = "Camera Teleop")
 public class BackstageBlueAuto extends LinearOpMode {
   public Robot robot = null;
   public Camera camera = null;
@@ -102,18 +102,19 @@ public class BackstageBlueAuto extends LinearOpMode {
       sleep(DELAY_DURATION);
     }
     telemetry.speak("Strafing");
-    robot.Drive(0.2, 0, 0);
+    robot.Drive(PRIMARY_SPEED, 0, 0);
     sleep(STRAFE_DURATION);
     robot.Drive(0, 0, 0);
     robot.lift.expand();
     align(placingPosition);
     approach(placingPosition);
     place(placingPosition);
-    robot.Drive(0, -0.2, 0);
+    robot.Drive(0, -PRIMARY_SPEED, 0);
     telemetry.speak("Backing up");
     sleep(BACKUP_DURATION);
+    robot.intake.hold();
     if (parkingLocation == ParkingLocation.LEFT) {
-      robot.Drive(-0.1, 0, 0);
+      robot.Drive(-SECONDARY_SPEED, 0, 0);
       telemetry.speak("Parking left");
       sleep(PARKING_STRAFE_DURATION);
     } else {
@@ -122,7 +123,7 @@ public class BackstageBlueAuto extends LinearOpMode {
     }
     robot.lift.constrict();
     telemetry.speak("Compressing Lift");
-    robot.Drive(0, 0.1, 0);
+    robot.Drive(0, SECONDARY_SPEED, 0);
     telemetry.speak("Approaching Wall");
     sleep(PARKING_DURATION);
     robot.Drive(0, 0, 0);
@@ -189,17 +190,17 @@ public class BackstageBlueAuto extends LinearOpMode {
           switch (position) {
             case LEFT:
               robot.Drive(
-                  (tag.position == Camera.AprilTagPosition.CENTER ? -0.2 : -0.3),
+                  (tag.position == Camera.AprilTagPosition.CENTER ? -PRIMARY_SPEED : -0.3),
                   Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
                   Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
               break;
             case RIGHT:
-              robot.Drive((tag.position == Camera.AprilTagPosition.CENTER ? 0.2 : 0.3),
+              robot.Drive((tag.position == Camera.AprilTagPosition.CENTER ? PRIMARY_SPEED : 0.3),
                   Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
                   Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
               break;
             case CENTER:
-              robot.Drive((tag.position == Camera.AprilTagPosition.LEFT ? 0.2 : -0.2),
+              robot.Drive((tag.position == Camera.AprilTagPosition.LEFT ? PRIMARY_SPEED : -PRIMARY_SPEED),
                   Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
                   Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
               break;
@@ -222,6 +223,7 @@ public class BackstageBlueAuto extends LinearOpMode {
   public void approach(AprilTagPosition position) {
     telemetry.speak("Approaching");
     while (opModeIsActive()) {
+      robot.intake.hold();
       try {
         List<Camera.AprilTag> tags = camera.getAprilTags();
 
@@ -263,6 +265,7 @@ public class BackstageBlueAuto extends LinearOpMode {
     timer.reset();
     telemetry.speak("Placing");
     while (opModeIsActive() && timer.milliseconds() < PLACE_DURATION) {
+      robot.intake.drop();
       try {
         List<Camera.AprilTag> tags = camera.getAprilTags();
 
@@ -273,11 +276,11 @@ public class BackstageBlueAuto extends LinearOpMode {
           }
         }
         if (tag != null) {
-          if (tag.ftcPose.x < precisionTolerance && tag.ftcPose.x > -precisionTolerance
+          /*if (!(tag.ftcPose.x < precisionTolerance && tag.ftcPose.x > -precisionTolerance
               && tag.ftcPose.range < FINAL_DISTANCE + precisionTolerance
-              && tag.ftcPose.yaw < precisionTolerance && tag.ftcPose.yaw > -precisionTolerance) {
-            return;
-          }
+              && tag.ftcPose.yaw < precisionTolerance && tag.ftcPose.yaw > -precisionTolerance)) {
+            align
+          }*/
           telemetry.addLine("Placing");
           robot.Drive(Range.clip(tag.ftcPose.x * sensitivity, -precisionSpeedLimit, precisionSpeedLimit),
               Range.clip(((tag.ftcPose.range - FINAL_DISTANCE) * sensitivity) + pressureSpeed, -precisionSpeedLimit,
@@ -325,7 +328,7 @@ public class BackstageBlueAuto extends LinearOpMode {
             }
           }
           tag = tag == null ? tags.get(0) : tag;
-          robot.Drive((tag.position == Camera.AprilTagPosition.CENTER ? 0.2 : 0.3),
+          robot.Drive((tag.position == Camera.AprilTagPosition.CENTER ? PRIMARY_SPEED : 0.3),
               Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
               Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
         }
