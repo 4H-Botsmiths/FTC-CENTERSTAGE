@@ -51,7 +51,7 @@ import static org.firstinspires.ftc.teamcode.classes.AutoGlobals.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-@Autonomous(name = "Backstage Red", group = "B")
+@Autonomous(name = "Backstage Red", group = "B", preselectTeleOp = "Camera Teleop")
 public class BackstageRedAuto extends LinearOpMode {
   public Robot robot = null;
   public Camera camera = null;
