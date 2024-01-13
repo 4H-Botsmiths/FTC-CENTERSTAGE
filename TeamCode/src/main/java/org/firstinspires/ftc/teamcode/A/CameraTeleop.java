@@ -156,7 +156,7 @@ public class CameraTeleop extends OpMode {
 
     /** 0 = down; 1 = up */
     robot.lift.setPosition(elbowPosition);
-    elbowPosition += -gamepad2.right_stick_y * 0.001;
+    elbowPosition += -gamepad2.right_stick_y * 0.01;
     elbowPosition = elbowPosition > 1 ? 1 : elbowPosition < 0 ? 0 : elbowPosition;
     //Same as above except it should control the trapdoor based off of the right_stick_x
     /*robot.trapdoor.setPosition(trapdoorPosition);
