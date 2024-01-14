@@ -101,13 +101,13 @@ public class OnstageRedAuto extends LinearOpMode {
       telemetry.speak("Delaying");
       sleep(DELAY_DURATION);
     }
-    robot.Drive(-0.2, 0, 0);
+    robot.Drive(-TERTIARY_SPEED, 0, 0);
     telemetry.speak("Strafing");
     sleep(ONSTAGE_STRAFE_DURATION);
-    robot.Drive(0, 0.2, 0);
+    robot.Drive(0, TERTIARY_SPEED, 0);
     telemetry.speak("Driving");
     sleep(ONSTAGE_DRIVE_DURATION);
-    robot.Drive(0.2, 0, 0);
+    robot.Drive(PRIMARY_SPEED, 0, 0);
     telemetry.speak("Strafing");
     sleep(STRAFE_DURATION);
     robot.Drive(0, 0, 0);
@@ -115,22 +115,32 @@ public class OnstageRedAuto extends LinearOpMode {
     align(placingPosition);
     approach(placingPosition);
     place(placingPosition);
-    robot.Drive(0, -0.2, 0);
-    telemetry.speak("Backing up");
-    sleep(BACKUP_DURATION);
+
     if (parkingLocation == ParkingLocation.LEFT) {
       telemetry.speak("Parking left");
-      prepareParkLeft();
+      /*robot.Drive(0, -SECONDARY_SPEED, 0);
+      sleep(LETS_BACK_UP);*/
     } else {
-      robot.Drive(0.1, 0, 0);
+      robot.Drive(0, -PRIMARY_SPEED, 0);
+      telemetry.speak("Backing up");
+      sleep(BACKUP_DURATION);
+      robot.Drive(SECONDARY_SPEED, 0, 0);
       telemetry.speak("Parking right");
       sleep(PARKING_STRAFE_DURATION);
+      robot.lift.constrict();
+      telemetry.speak("Compressing Lift");
+      robot.Drive(0, 0, 0);
+      while (robot.lift.status != Robot.LiftStatus.LOWERED) {
+        sleep(50);
+      }
+      robot.lift.setSpeed(POPUP_SPEED);
+      sleep(POPUP_DURATION);
+      robot.lift.setSpeed(0);
+      robot.Drive(0, SECONDARY_SPEED, 0);
+      telemetry.speak("Approaching Wall");
+      sleep(PARKING_DURATION);
     }
-    robot.lift.constrict();
-    telemetry.speak("Compressing Lift");
-    robot.Drive(0, 0.1, 0);
-    telemetry.speak("Approaching Wall");
-    sleep(PARKING_DURATION);
+
     robot.Drive(0, 0, 0);
     telemetry.speak("Done");
   }
@@ -195,17 +205,17 @@ public class OnstageRedAuto extends LinearOpMode {
           switch (position) {
             case LEFT:
               robot.Drive(
-                  (tag.position == Camera.AprilTagPosition.CENTER ? -0.2 : -0.3),
+                  (tag.position == Camera.AprilTagPosition.CENTER ? -PRIMARY_SPEED : -0.3),
                   Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
                   Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
               break;
             case RIGHT:
-              robot.Drive((tag.position == Camera.AprilTagPosition.CENTER ? 0.2 : 0.3),
+              robot.Drive((tag.position == Camera.AprilTagPosition.CENTER ? PRIMARY_SPEED : 0.3),
                   Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
                   Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
               break;
             case CENTER:
-              robot.Drive((tag.position == Camera.AprilTagPosition.LEFT ? 0.2 : -0.2),
+              robot.Drive((tag.position == Camera.AprilTagPosition.LEFT ? PRIMARY_SPEED : -PRIMARY_SPEED),
                   Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
                   Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
               break;
@@ -228,6 +238,7 @@ public class OnstageRedAuto extends LinearOpMode {
   public void approach(AprilTagPosition position) {
     telemetry.speak("Approaching");
     while (opModeIsActive()) {
+      robot.intake.hold();
       try {
         List<Camera.AprilTag> tags = camera.getAprilTags();
 
@@ -269,6 +280,7 @@ public class OnstageRedAuto extends LinearOpMode {
     timer.reset();
     telemetry.speak("Placing");
     while (opModeIsActive() && timer.milliseconds() < PLACE_DURATION) {
+      robot.intake.drop();
       try {
         List<Camera.AprilTag> tags = camera.getAprilTags();
 
@@ -279,11 +291,6 @@ public class OnstageRedAuto extends LinearOpMode {
           }
         }
         if (tag != null) {
-          if (tag.ftcPose.x < precisionTolerance && tag.ftcPose.x > -precisionTolerance
-              && tag.ftcPose.range < FINAL_DISTANCE + precisionTolerance
-              && tag.ftcPose.yaw < precisionTolerance && tag.ftcPose.yaw > -precisionTolerance) {
-            return;
-          }
           telemetry.addLine("Placing");
           robot.Drive(Range.clip(tag.ftcPose.x * sensitivity, -precisionSpeedLimit, precisionSpeedLimit),
               Range.clip(((tag.ftcPose.range - FINAL_DISTANCE) * sensitivity) + pressureSpeed, -precisionSpeedLimit,
@@ -331,7 +338,7 @@ public class OnstageRedAuto extends LinearOpMode {
             }
           }
           tag = tag == null ? tags.get(0) : tag;
-          robot.Drive((tag.position == Camera.AprilTagPosition.CENTER ? -0.2 : -0.3),
+          robot.Drive((tag.position == Camera.AprilTagPosition.CENTER ? -PRIMARY_SPEED : -0.3),
               Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
               Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
         }
