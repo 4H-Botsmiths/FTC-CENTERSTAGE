@@ -51,8 +51,8 @@ import static org.firstinspires.ftc.teamcode.classes.AutoGlobals.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-@Autonomous(name = "Backstage Blue", group = "B", preselectTeleOp = "Camera Teleop")
-public class BackstageBlueAuto extends LinearOpMode {
+@Autonomous(name = "Onstage Red", group = "A", preselectTeleOp = "Camera Teleop")
+public class OnstageRedAuto extends LinearOpMode {
   public Robot robot = null;
   public Camera camera = null;
 
@@ -97,23 +97,27 @@ public class BackstageBlueAuto extends LinearOpMode {
       telemetry.speak("Delaying");
       sleep(DELAY_DURATION);
     }
+    robot.Drive(-TERTIARY_SPEED, 0, 0);
     telemetry.speak("Strafing");
+    sleep(ONSTAGE_STRAFE_DURATION);
+    robot.Drive(0, TERTIARY_SPEED, 0);
+    telemetry.speak("Driving");
+    sleep(ONSTAGE_DRIVE_DURATION);
     robot.Drive(PRIMARY_SPEED, 0, 0);
+    telemetry.speak("Strafing");
     sleep(STRAFE_DURATION);
     robot.Drive(0, 0, 0);
     robot.lift.expand();
-    robot.Drive(0, TERTIARY_SPEED, 0);
-    sleep(CREEP_DURATION);
     align(placingPosition);
     approach(placingPosition);
     place(placingPosition);
-    robot.Drive(0, -PRIMARY_SPEED, 0);
-    telemetry.speak("Backing up");
-    sleep(BACKUP_DURATION);
-    robot.intake.hold();
-    if (parkingLocation == ParkingLocation.CORNER) {
-      robot.Drive(-SECONDARY_SPEED, 0, 0);
-      telemetry.speak("Parking in the corner");
+
+    if (parkingLocation == ParkingLocation.BOARD) {
+      robot.Drive(0, -PRIMARY_SPEED, 0);
+      telemetry.speak("Backing up");
+      sleep(BACKUP_DURATION);
+      robot.Drive(SECONDARY_SPEED, 0, 0);
+      telemetry.speak("Parking right");
       sleep(PARKING_STRAFE_DURATION);
       robot.lift.constrict();
       telemetry.speak("Compressing Lift");
@@ -128,11 +132,9 @@ public class BackstageBlueAuto extends LinearOpMode {
       telemetry.speak("Approaching Wall");
       sleep(PARKING_DURATION);
     } else {
-      robot.lift.constrict();
-      telemetry.speak("Compressing Lift");
-      telemetry.speak("Parking at the rigging");
-      robot.Drive(0, -SECONDARY_SPEED, 0);
-      sleep(LETS_BACK_UP);
+      telemetry.speak("Parking at the board");
+      /*robot.Drive(0, -SECONDARY_SPEED, 0);
+      sleep(LETS_BACK_UP);*/
     }
 
     robot.Drive(0, 0, 0);
@@ -149,9 +151,9 @@ public class BackstageBlueAuto extends LinearOpMode {
 
   public void initInput() {
     if (gamepad1.left_bumper || gamepad2.left_bumper) {
-      parkingLocation = ParkingLocation.CORNER;
+      parkingLocation = ParkingLocation.BOARD;
     } else if (gamepad1.right_bumper || gamepad2.right_bumper) {
-      parkingLocation = ParkingLocation.RIGGING;
+      parkingLocation = ParkingLocation.CORNER;
     }
     if (gamepad1.dpad_up || gamepad2.dpad_up) {
       placingPosition = AprilTagPosition.CENTER;
@@ -285,11 +287,6 @@ public class BackstageBlueAuto extends LinearOpMode {
           }
         }
         if (tag != null) {
-          /*if (!(tag.ftcPose.x < precisionTolerance && tag.ftcPose.x > -precisionTolerance
-              && tag.ftcPose.range < FINAL_DISTANCE + precisionTolerance
-              && tag.ftcPose.yaw < precisionTolerance && tag.ftcPose.yaw > -precisionTolerance)) {
-            align
-          }*/
           telemetry.addLine("Placing");
           robot.Drive(Range.clip(tag.ftcPose.x * sensitivity, -precisionSpeedLimit, precisionSpeedLimit),
               Range.clip(((tag.ftcPose.range - FINAL_DISTANCE) * sensitivity) + pressureSpeed, -precisionSpeedLimit,
@@ -310,14 +307,14 @@ public class BackstageBlueAuto extends LinearOpMode {
     }
   }
 
-  public void prepareParkRight() {
+  public void prepareParkLeft() {
     while (opModeIsActive()) {
       try {
         List<Camera.AprilTag> tags = camera.getAprilTags();
 
         Camera.AprilTag tag = null;
         for (Camera.AprilTag _tag : tags) {
-          if (_tag.position == Camera.AprilTagPosition.RIGHT) {
+          if (_tag.position == Camera.AprilTagPosition.LEFT) {
             tag = _tag;
           }
         }
@@ -337,7 +334,7 @@ public class BackstageBlueAuto extends LinearOpMode {
             }
           }
           tag = tag == null ? tags.get(0) : tag;
-          robot.Drive((tag.position == Camera.AprilTagPosition.CENTER ? PRIMARY_SPEED : 0.3),
+          robot.Drive((tag.position == Camera.AprilTagPosition.CENTER ? -PRIMARY_SPEED : -0.3),
               Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
               Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
         }

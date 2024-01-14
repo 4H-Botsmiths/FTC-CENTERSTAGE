@@ -51,8 +51,8 @@ import static org.firstinspires.ftc.teamcode.classes.AutoGlobals.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-@Autonomous(name = "Onstage Red", group = "B", preselectTeleOp = "Camera Teleop")
-public class OnstageRedAuto extends LinearOpMode {
+@Autonomous(name = "Onstage Blue", group = "A", preselectTeleOp = "Camera Teleop")
+public class OnstageBlueAuto extends LinearOpMode {
   public Robot robot = null;
   public Camera camera = null;
 
@@ -97,13 +97,13 @@ public class OnstageRedAuto extends LinearOpMode {
       telemetry.speak("Delaying");
       sleep(DELAY_DURATION);
     }
-    robot.Drive(-TERTIARY_SPEED, 0, 0);
+    robot.Drive(TERTIARY_SPEED, 0, 0);
     telemetry.speak("Strafing");
     sleep(ONSTAGE_STRAFE_DURATION);
     robot.Drive(0, TERTIARY_SPEED, 0);
     telemetry.speak("Driving");
     sleep(ONSTAGE_DRIVE_DURATION);
-    robot.Drive(PRIMARY_SPEED, 0, 0);
+    robot.Drive(-PRIMARY_SPEED, 0, 0);
     telemetry.speak("Strafing");
     sleep(STRAFE_DURATION);
     robot.Drive(0, 0, 0);
@@ -111,13 +111,12 @@ public class OnstageRedAuto extends LinearOpMode {
     align(placingPosition);
     approach(placingPosition);
     place(placingPosition);
-
-    if (parkingLocation == ParkingLocation.BOARD) {
+    if (parkingLocation == ParkingLocation.CORNER) {
       robot.Drive(0, -PRIMARY_SPEED, 0);
       telemetry.speak("Backing up");
       sleep(BACKUP_DURATION);
-      robot.Drive(SECONDARY_SPEED, 0, 0);
-      telemetry.speak("Parking right");
+      robot.Drive(-SECONDARY_SPEED, 0, 0);
+      telemetry.speak("Parking left");
       sleep(PARKING_STRAFE_DURATION);
       robot.lift.constrict();
       telemetry.speak("Compressing Lift");
@@ -133,7 +132,8 @@ public class OnstageRedAuto extends LinearOpMode {
       sleep(PARKING_DURATION);
     } else {
       telemetry.speak("Parking at the board");
-      /*robot.Drive(0, -SECONDARY_SPEED, 0);
+      /*prepareParkRight();
+      robot.Drive(0, -SECONDARY_SPEED, 0);
       sleep(LETS_BACK_UP);*/
     }
 
@@ -151,9 +151,9 @@ public class OnstageRedAuto extends LinearOpMode {
 
   public void initInput() {
     if (gamepad1.left_bumper || gamepad2.left_bumper) {
-      parkingLocation = ParkingLocation.BOARD;
-    } else if (gamepad1.right_bumper || gamepad2.right_bumper) {
       parkingLocation = ParkingLocation.CORNER;
+    } else if (gamepad1.right_bumper || gamepad2.right_bumper) {
+      parkingLocation = ParkingLocation.BOARD;
     }
     if (gamepad1.dpad_up || gamepad2.dpad_up) {
       placingPosition = AprilTagPosition.CENTER;
@@ -307,14 +307,14 @@ public class OnstageRedAuto extends LinearOpMode {
     }
   }
 
-  public void prepareParkLeft() {
+  public void prepareParkRight() {
     while (opModeIsActive()) {
       try {
         List<Camera.AprilTag> tags = camera.getAprilTags();
 
         Camera.AprilTag tag = null;
         for (Camera.AprilTag _tag : tags) {
-          if (_tag.position == Camera.AprilTagPosition.LEFT) {
+          if (_tag.position == Camera.AprilTagPosition.RIGHT) {
             tag = _tag;
           }
         }
@@ -334,7 +334,7 @@ public class OnstageRedAuto extends LinearOpMode {
             }
           }
           tag = tag == null ? tags.get(0) : tag;
-          robot.Drive((tag.position == Camera.AprilTagPosition.CENTER ? -PRIMARY_SPEED : -0.3),
+          robot.Drive((tag.position == Camera.AprilTagPosition.CENTER ? PRIMARY_SPEED : 0.3),
               Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
               Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
         }

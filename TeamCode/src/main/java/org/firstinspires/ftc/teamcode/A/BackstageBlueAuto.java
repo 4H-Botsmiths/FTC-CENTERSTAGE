@@ -51,8 +51,8 @@ import static org.firstinspires.ftc.teamcode.classes.AutoGlobals.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-@Autonomous(name = "Backstage Red", group = "B", preselectTeleOp = "Camera Teleop")
-public class BackstageRedAuto extends LinearOpMode {
+@Autonomous(name = "Backstage Blue", group = "A", preselectTeleOp = "Camera Teleop")
+public class BackstageBlueAuto extends LinearOpMode {
   public Robot robot = null;
   public Camera camera = null;
 
@@ -98,7 +98,7 @@ public class BackstageRedAuto extends LinearOpMode {
       sleep(DELAY_DURATION);
     }
     telemetry.speak("Strafing");
-    robot.Drive(-PRIMARY_SPEED, 0, 0);
+    robot.Drive(PRIMARY_SPEED, 0, 0);
     sleep(STRAFE_DURATION);
     robot.Drive(0, 0, 0);
     robot.lift.expand();
@@ -112,7 +112,7 @@ public class BackstageRedAuto extends LinearOpMode {
     sleep(BACKUP_DURATION);
     robot.intake.hold();
     if (parkingLocation == ParkingLocation.CORNER) {
-      robot.Drive(SECONDARY_SPEED, 0, 0);
+      robot.Drive(-SECONDARY_SPEED, 0, 0);
       telemetry.speak("Parking in the corner");
       sleep(PARKING_STRAFE_DURATION);
       robot.lift.constrict();
@@ -149,9 +149,9 @@ public class BackstageRedAuto extends LinearOpMode {
 
   public void initInput() {
     if (gamepad1.left_bumper || gamepad2.left_bumper) {
-      parkingLocation = ParkingLocation.RIGGING;
-    } else if (gamepad1.right_bumper || gamepad2.right_bumper) {
       parkingLocation = ParkingLocation.CORNER;
+    } else if (gamepad1.right_bumper || gamepad2.right_bumper) {
+      parkingLocation = ParkingLocation.RIGGING;
     }
     if (gamepad1.dpad_up || gamepad2.dpad_up) {
       placingPosition = AprilTagPosition.CENTER;
@@ -199,17 +199,17 @@ public class BackstageRedAuto extends LinearOpMode {
           switch (position) {
             case LEFT:
               robot.Drive(
-                  (tag.position == Camera.AprilTagPosition.CENTER ? -0.2 : -0.3),
+                  (tag.position == Camera.AprilTagPosition.CENTER ? -PRIMARY_SPEED : -0.3),
                   Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
                   Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
               break;
             case RIGHT:
-              robot.Drive((tag.position == Camera.AprilTagPosition.CENTER ? 0.2 : 0.3),
+              robot.Drive((tag.position == Camera.AprilTagPosition.CENTER ? PRIMARY_SPEED : 0.3),
                   Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
                   Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
               break;
             case CENTER:
-              robot.Drive((tag.position == Camera.AprilTagPosition.LEFT ? 0.2 : -0.2),
+              robot.Drive((tag.position == Camera.AprilTagPosition.LEFT ? PRIMARY_SPEED : -PRIMARY_SPEED),
                   Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
                   Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
               break;
@@ -285,10 +285,10 @@ public class BackstageRedAuto extends LinearOpMode {
           }
         }
         if (tag != null) {
-          /*if (tag.ftcPose.x < precisionTolerance && tag.ftcPose.x > -precisionTolerance
+          /*if (!(tag.ftcPose.x < precisionTolerance && tag.ftcPose.x > -precisionTolerance
               && tag.ftcPose.range < FINAL_DISTANCE + precisionTolerance
-              && tag.ftcPose.yaw < precisionTolerance && tag.ftcPose.yaw > -precisionTolerance) {
-            return;
+              && tag.ftcPose.yaw < precisionTolerance && tag.ftcPose.yaw > -precisionTolerance)) {
+            align
           }*/
           telemetry.addLine("Placing");
           robot.Drive(Range.clip(tag.ftcPose.x * sensitivity, -precisionSpeedLimit, precisionSpeedLimit),
@@ -310,14 +310,14 @@ public class BackstageRedAuto extends LinearOpMode {
     }
   }
 
-  public void prepareParkLeft() {
+  public void prepareParkRight() {
     while (opModeIsActive()) {
       try {
         List<Camera.AprilTag> tags = camera.getAprilTags();
 
         Camera.AprilTag tag = null;
         for (Camera.AprilTag _tag : tags) {
-          if (_tag.position == Camera.AprilTagPosition.LEFT) {
+          if (_tag.position == Camera.AprilTagPosition.RIGHT) {
             tag = _tag;
           }
         }
@@ -337,7 +337,7 @@ public class BackstageRedAuto extends LinearOpMode {
             }
           }
           tag = tag == null ? tags.get(0) : tag;
-          robot.Drive((tag.position == Camera.AprilTagPosition.CENTER ? -0.2 : -0.3),
+          robot.Drive((tag.position == Camera.AprilTagPosition.CENTER ? PRIMARY_SPEED : 0.3),
               Range.clip((tag.ftcPose.range - DISTANCE) * sensitivity, -speedLimit, speedLimit),
               Range.clip(tag.ftcPose.yaw * -turnSensitivity, -turnSpeedLimit, turnSpeedLimit));
         }

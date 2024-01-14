@@ -6,6 +6,7 @@ import org.firstinspires.ftc.teamcode.classes.HDMotor;
 import org.firstinspires.ftc.teamcode.classes.CoreMotor;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -16,6 +17,7 @@ import java.lang.Thread;
 import java.util.Timer;
 
 @Autonomous(name = "Autonomous Backstage", group = "A", preselectTeleOp = "Teleop")
+@Disabled()
 public class AutonomousBackstage extends OpMode {
   // Declare OpMode members.
   private ElapsedTime runtime = new ElapsedTime();
