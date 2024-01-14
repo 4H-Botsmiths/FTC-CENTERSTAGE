@@ -106,6 +106,8 @@ public class BackstageBlueAuto extends LinearOpMode {
     sleep(STRAFE_DURATION);
     robot.Drive(0, 0, 0);
     robot.lift.expand();
+    robot.Drive(0, TERTIARY_SPEED, 0);
+    sleep(CREEP_DURATION);
     align(placingPosition);
     approach(placingPosition);
     place(placingPosition);
@@ -117,15 +119,24 @@ public class BackstageBlueAuto extends LinearOpMode {
       robot.Drive(-SECONDARY_SPEED, 0, 0);
       telemetry.speak("Parking left");
       sleep(PARKING_STRAFE_DURATION);
+      robot.lift.constrict();
+      telemetry.speak("Compressing Lift");
+      robot.Drive(0, 0, 0);
+      while (robot.lift.status != Robot.LiftStatus.LOWERED) {
+        sleep(50);
+      }
+      robot.lift.setSpeed(POPUP_SPEED);
+      sleep(POPUP_DURATION);
+      robot.lift.setSpeed(0);
+      robot.Drive(0, SECONDARY_SPEED, 0);
+      telemetry.speak("Approaching Wall");
+      sleep(PARKING_DURATION);
     } else {
-      telemetry.speak("Parking right");
-      prepareParkRight();
+      telemetry.speak("Backing Up");
+      robot.Drive(0, -SECONDARY_SPEED, 0);
+      sleep(LETS_BACK_UP);
     }
-    robot.lift.constrict();
-    telemetry.speak("Compressing Lift");
-    robot.Drive(0, SECONDARY_SPEED, 0);
-    telemetry.speak("Approaching Wall");
-    sleep(PARKING_DURATION);
+
     robot.Drive(0, 0, 0);
     telemetry.speak("Done");
   }
