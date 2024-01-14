@@ -47,4 +47,8 @@ public class AutoGlobals {
   public final static int POPUP_DURATION = 500;
 
   public final static int LETS_BACK_UP = 6000;
+
+  public enum ParkingLocation {
+    CORNER, BOARD, RIGGING
+  }
 }
