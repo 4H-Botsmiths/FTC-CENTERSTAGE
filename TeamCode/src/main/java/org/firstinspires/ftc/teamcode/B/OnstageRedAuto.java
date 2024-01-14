@@ -74,11 +74,7 @@ public class OnstageRedAuto extends LinearOpMode {
 
   public boolean delay = false;
   public AprilTagPosition placingPosition = AprilTagPosition.CENTER;
-  public ParkingLocation parkingLocation = ParkingLocation.RIGHT;
-
-  enum ParkingLocation {
-    LEFT, RIGHT
-  }
+  public ParkingLocation parkingLocation = ParkingLocation.CORNER;
 
   @Override
   public void runOpMode() {
@@ -116,11 +112,7 @@ public class OnstageRedAuto extends LinearOpMode {
     approach(placingPosition);
     place(placingPosition);
 
-    if (parkingLocation == ParkingLocation.LEFT) {
-      telemetry.speak("Parking left");
-      /*robot.Drive(0, -SECONDARY_SPEED, 0);
-      sleep(LETS_BACK_UP);*/
-    } else {
+    if (parkingLocation == ParkingLocation.BOARD) {
       robot.Drive(0, -PRIMARY_SPEED, 0);
       telemetry.speak("Backing up");
       sleep(BACKUP_DURATION);
@@ -139,6 +131,10 @@ public class OnstageRedAuto extends LinearOpMode {
       robot.Drive(0, SECONDARY_SPEED, 0);
       telemetry.speak("Approaching Wall");
       sleep(PARKING_DURATION);
+    } else {
+      telemetry.speak("Parking at the board");
+      /*robot.Drive(0, -SECONDARY_SPEED, 0);
+      sleep(LETS_BACK_UP);*/
     }
 
     robot.Drive(0, 0, 0);
@@ -155,9 +151,9 @@ public class OnstageRedAuto extends LinearOpMode {
 
   public void initInput() {
     if (gamepad1.left_bumper || gamepad2.left_bumper) {
-      parkingLocation = ParkingLocation.LEFT;
+      parkingLocation = ParkingLocation.BOARD;
     } else if (gamepad1.right_bumper || gamepad2.right_bumper) {
-      parkingLocation = ParkingLocation.RIGHT;
+      parkingLocation = ParkingLocation.CORNER;
     }
     if (gamepad1.dpad_up || gamepad2.dpad_up) {
       placingPosition = AprilTagPosition.CENTER;
